@@ -3,7 +3,7 @@ use yew_router::{route::Route, switch::Permissive};
 
 mod components;
 mod pages;
-use pages::{guilds::Guilds, home::Home, page_not_found::PageNotFound, soundboard::Soundboard};
+use pages::{Guilds, Home, NotFound, Soundboard};
 mod app_route;
 use app_route::{AppAnchor, AppRoute, AppRouter};
 
@@ -46,7 +46,7 @@ impl Component for Model {
 
             <main>
                <AppRouter render=AppRouter::render(Self::route) redirect=AppRouter::redirect(|route: Route| {
-                  AppRoute::PageNotFound(Permissive(Some(route.route))) }) />
+                  AppRoute::NotFound(Permissive(Some(route.route))) }) />
             </main>
             <div class="is-flex-grow-1"/>
             <footer class="footer mt-auto">
@@ -107,8 +107,8 @@ impl Model {
          AppRoute::Home => {
             html! { <Home /> }
          }
-         AppRoute::PageNotFound(Permissive(route)) => {
-            html! { <PageNotFound route=route /> }
+         AppRoute::NotFound(Permissive(route)) => {
+            html! { <NotFound route=route /> }
          }
       }
    }

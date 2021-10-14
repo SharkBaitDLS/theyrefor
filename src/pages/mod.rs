@@ -1,4 +1,9 @@
-pub mod guilds;
-pub mod home;
-pub mod page_not_found;
-pub mod soundboard;
+mod guilds;
+mod home;
+mod not_found;
+mod soundboard;
+
+pub use guilds::Guilds;
+pub use home::Home;
+pub use not_found::NotFound;
+pub use soundboard::Soundboard;

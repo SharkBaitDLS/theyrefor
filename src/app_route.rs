@@ -7,7 +7,7 @@ pub enum AppRoute {
    #[to = "/clips"]
    Guilds,
    #[to = "/page-not-found"]
-   PageNotFound(Permissive<String>),
+   NotFound(Permissive<String>),
    #[to = "/!"]
    Home,
 }

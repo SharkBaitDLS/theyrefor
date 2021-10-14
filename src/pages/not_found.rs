@@ -6,10 +6,10 @@ pub struct Props {
    pub route: Option<String>,
 }
 
-pub struct PageNotFound {
+pub struct NotFound {
    props: Props,
 }
-impl Component for PageNotFound {
+impl Component for NotFound {
    type Message = ();
    type Properties = Props;
 
