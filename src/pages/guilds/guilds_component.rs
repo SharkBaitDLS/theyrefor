@@ -10,8 +10,8 @@ pub struct Guild {
    pub(super) image_url: String,
 }
 
+// TODO: actually implement with HTTP
 async fn get_guilds() -> Result<Vec<Guild>, Error> {
-   // TODO: actually implement with HTTP
    TimeoutFuture::new(2_000).await;
    Ok::<Vec<Guild>, Error>(vec![
       Guild {
@@ -35,9 +35,7 @@ pub enum Msg {
 }
 
 pub struct Guilds {
-   pub(super) loading: bool,
-   pub(super) error: bool,
-   pub(super) guilds: Vec<Guild>,
+   pub(super) guilds: Option<Result<Vec<Guild>, ()>>,
 }
 impl Component for Guilds {
    type Message = Msg;
@@ -51,23 +49,13 @@ impl Component for Guilds {
             Err(_) => Msg::Fail,
          }
       });
-      Self {
-         loading: true,
-         error: false,
-         guilds: Vec::new(),
-      }
+      Self { guilds: None }
    }
 
    fn update(&mut self, msg: Self::Message) -> ShouldRender {
       match msg {
-         Msg::Done(guilds) => {
-            self.guilds = guilds;
-            self.loading = false;
-         }
-         Msg::Fail => {
-            self.loading = false;
-            self.error = true;
-         }
+         Msg::Done(guilds) => self.guilds = Some(Ok(guilds)),
+         Msg::Fail => self.guilds = Some(Err(())),
       };
       true
    }

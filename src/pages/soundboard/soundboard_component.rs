@@ -1,3 +1,4 @@
+use gloo_timers::future::TimeoutFuture;
 use rand::{distributions::Alphanumeric, Rng};
 use reqwest::Error;
 use yew::{Component, ComponentLink, Html, Properties, ShouldRender};
@@ -8,29 +9,39 @@ pub struct Props {
    pub guild_id: u64,
 }
 
-async fn get_clips(guild_id: u64) -> Result<Vec<String>, Error> {
+// TODO: actually implement with HTTP
+async fn get_clips(_guild_id: u64) -> Result<ClipResponse, Error> {
    let mut result = Vec::new();
 
    for _ in 1..1000 {
       let rand_string: String = rand::thread_rng()
          .sample_iter(&Alphanumeric)
-         .take(10)
+         .take(30)
          .map(char::from)
          .collect();
       result.push(rand_string);
    }
-   Ok(result)
+
+   TimeoutFuture::new(2_000).await;
+
+   Ok(ClipResponse {
+      clip_names: result,
+      guild_name: "Lamer Gamers".to_string(),
+   })
+}
+
+pub struct ClipResponse {
+   pub(super) clip_names: Vec<String>,
+   pub(super) guild_name: String,
 }
 
 pub enum Msg {
-   Done(Vec<String>),
+   Done(ClipResponse),
    Fail,
 }
 
 pub struct Soundboard {
-   pub clip_names: Vec<String>,
-   pub loading: bool,
-   pub error: bool,
+   pub(super) data: Option<Result<ClipResponse, ()>>,
 }
 impl Component for Soundboard {
    type Message = Msg;
@@ -43,23 +54,13 @@ impl Component for Soundboard {
             Err(_) => Msg::Fail,
          }
       });
-      Self {
-         clip_names: Vec::new(),
-         loading: true,
-         error: false,
-      }
+      Self { data: None }
    }
 
    fn update(&mut self, msg: Self::Message) -> ShouldRender {
       match msg {
-         Msg::Done(clips) => {
-            self.clip_names = clips;
-            self.loading = false;
-         }
-         Msg::Fail => {
-            self.loading = false;
-            self.error = true;
-         }
+         Msg::Done(response) => self.data = Some(Ok(response)),
+         Msg::Fail => self.data = Some(Err(())),
       };
       true
    }

@@ -1,7 +1,24 @@
+// Prevent side scroll
+body {
+  overflow-x: hidden;
+  position: relative;
+}
 .main {
   height: 100vh;
 }
 
+// Clip track list grid
+.tracklist {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+}
+.tracklist-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// Loading ellipsis
 .lds-ellipsis {
   display: inline-block;
   position: relative;
@@ -14,7 +31,7 @@
   width: 13px;
   height: 13px;
   border-radius: 50%;
-  background: #00d1b2;
+  background: #888;
   animation-timing-function: cubic-bezier(0, 1, 1, 0);
 }
 .lds-ellipsis div:nth-child(1) {

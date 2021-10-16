@@ -44,7 +44,7 @@ impl Component for Home {
                   <div class="tile is-child box">
                      <p class="title">{ "Server Admins" }</p>
                      <div class="content">
-                        <article class="message is-info mb-2">
+                        <article class="message is-info block">
                            <div class="message-header">
                               <p>{ "Coming Soon!" }</p>
                            </div>

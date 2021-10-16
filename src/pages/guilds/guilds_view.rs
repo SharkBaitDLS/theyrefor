@@ -2,18 +2,17 @@ use yew::{html, Html};
 
 use crate::{app_route::AppRoute, AppAnchor};
 
-use super::Guilds;
-
-impl Guilds {
+impl super::Guilds {
    pub(super) fn render(&self) -> Html {
-      if self.loading {
-         html! {
+      match &self.guilds {
+         // Loading
+         None => html! {
             <div class="hero">
                <div class="lds-ellipsis container"><div></div><div></div><div></div><div></div></div>
             </div>
-         }
-      } else if self.error {
-         html! {
+         },
+         // Failed to load
+         Some(Err(_)) => html! {
             <div class="tile is-ancestor columns is-centered mt-2 px-4">
                <div class="tile is-4 is-parent">
                   <div class="tile is-child">
@@ -28,9 +27,9 @@ impl Guilds {
                   </div>
                </div>
             </div>
-         }
-      } else {
-         html! {
+         },
+         // Success
+         Some(Ok(response)) => html! {
             <div class="tile is-ancestor is-vertical">
                <div class="tile is-child hero">
                   <div class="hero-body container pb-0">
@@ -41,7 +40,7 @@ impl Guilds {
 
                <div class="tile is-parent container">
                   {
-                     for self.guilds.iter().map(|guild| {
+                     for response.iter().map(|guild| {
                         html! {
                            <AppAnchor classes="tile is-parent" route=AppRoute::Soundboard(guild.id)>
                               <div class="tile is-child card">
@@ -64,7 +63,7 @@ impl Guilds {
                   }
                </div>
             </div>
-         }
+         },
       }
    }
 }
