@@ -73,7 +73,9 @@ impl Model {
       html! {
          <nav class="navbar is-primary" role="navigation" aria-label="main navigation">
             <div class="navbar-brand">
-               <h1 class="navbar-item is-size-3">{ "My Man" }</h1>
+               <AppAnchor classes="navbar-item is-size-3" route=AppRoute::Home>
+                  { "My Man" }
+               </AppAnchor>
                <a role="button" class=classes!("navbar-burger", "burger" , active_class) aria-label="menu"
                   aria-expanded="false" onclick=link.callback(|_| Msg::ToggleNavbar)>
                   <span aria-hidden="true"></span>
@@ -83,9 +85,6 @@ impl Model {
             </div>
             <div class=classes!("navbar-menu", active_class) onclick=link.callback(|_| Msg::DisableNavbar)>
                <div class="navbar-start">
-                  <AppAnchor classes="navbar-item" route=AppRoute::Home>
-                     { "Home" }
-                  </AppAnchor>
                   <AppAnchor classes="navbar-item" route=AppRoute::Guilds>
                      { "Clips" }
                   </AppAnchor>
