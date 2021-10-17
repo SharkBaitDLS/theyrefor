@@ -1,16 +1,2 @@
-[package]
-name = "theyrefor"
-version = "0.1.0"
-edition = "2018"
-authors = ["Isaac M. Good <imgood@imgoodproductions.org>"]
-
-[dependencies]
-gloo-timers = { features = ["futures"], version = "0.2" }
-log = "0.4"
-getrandom = { features = ["js"], version = "0.2" }
-rand = "0.8"
-reqwest = "0.11"
-wasm-logger = "0.2"
-yew = "0.18"
-yew-router = "0.15"
-yewtil = "0.4"
+[workspace]
+members = ["ui"]

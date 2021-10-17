@@ -818,7 +818,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "theyrefor"
+name = "theyrefor-ui"
 version = "0.1.0"
 dependencies = [
  "getrandom",
