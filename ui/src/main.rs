@@ -1,7 +1,6 @@
 use yew::{classes, html, Component, ComponentLink, Html, ShouldRender};
 use yew_router::{route::Route, switch::Permissive};
 
-mod components;
 mod pages;
 use pages::{Guilds, Home, NotFound, Soundboard};
 mod app_route;

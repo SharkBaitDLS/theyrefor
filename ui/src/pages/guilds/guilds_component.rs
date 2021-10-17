@@ -1,14 +1,8 @@
 use gloo_timers::future::TimeoutFuture;
 use reqwest::Error;
+use theyrefor_models::Guild;
 use yew::{Component, ComponentLink, Html, ShouldRender};
 use yewtil::future::LinkFuture;
-
-// TODO: move to shared server models
-pub struct Guild {
-   pub(super) name: String,
-   pub(super) id: u64,
-   pub(super) image_url: String,
-}
 
 // TODO: actually implement with HTTP
 async fn get_guilds() -> Result<Vec<Guild>, Error> {

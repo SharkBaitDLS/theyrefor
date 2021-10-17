@@ -5,6 +5,8 @@ edition = "2018"
 authors = ["Isaac M. Good <imgood@imgoodproductions.org>"]
 
 [dependencies]
+theyrefor-models = { path = "../models" }
+
 gloo-timers = { features = ["futures"], version = "0.2" }
 log = "0.4"
 getrandom = { features = ["js"], version = "0.2" }

@@ -818,6 +818,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "theyrefor-models"
+version = "0.1.0"
+
+[[package]]
 name = "theyrefor-ui"
 version = "0.1.0"
 dependencies = [
@@ -826,6 +830,7 @@ dependencies = [
  "log",
  "rand",
  "reqwest",
+ "theyrefor-models",
  "wasm-logger",
  "yew",
  "yew-router",

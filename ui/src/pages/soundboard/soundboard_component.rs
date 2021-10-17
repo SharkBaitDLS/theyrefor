@@ -1,6 +1,7 @@
 use gloo_timers::future::TimeoutFuture;
 use rand::{distributions::Alphanumeric, Rng};
 use reqwest::Error;
+use theyrefor_models::GuildClips;
 use yew::{Component, ComponentLink, Html, Properties, ShouldRender};
 use yewtil::future::LinkFuture;
 
@@ -10,7 +11,7 @@ pub struct Props {
 }
 
 // TODO: actually implement with HTTP
-async fn get_clips(_guild_id: u64) -> Result<ClipResponse, Error> {
+async fn get_clips(_guild_id: u64) -> Result<GuildClips, Error> {
    let mut result = Vec::new();
 
    for _ in 1..1000 {
@@ -24,24 +25,19 @@ async fn get_clips(_guild_id: u64) -> Result<ClipResponse, Error> {
 
    TimeoutFuture::new(2_000).await;
 
-   Ok(ClipResponse {
+   Ok(GuildClips {
       clip_names: result,
       guild_name: "Lamer Gamers".to_string(),
    })
 }
 
-pub struct ClipResponse {
-   pub(super) clip_names: Vec<String>,
-   pub(super) guild_name: String,
-}
-
 pub enum Msg {
-   Done(ClipResponse),
+   Done(GuildClips),
    Fail,
 }
 
 pub struct Soundboard {
-   pub(super) data: Option<Result<ClipResponse, ()>>,
+   pub(super) data: Option<Result<GuildClips, ()>>,
 }
 impl Component for Soundboard {
    type Message = Msg;
