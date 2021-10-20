@@ -4,4 +4,11 @@ version = "0.1.0"
 edition = "2018"
 
 [dependencies]
-rocket = "0.5.0-rc.1"
+either = "*"
+log = "*"
+reqwest = { version = "0.11", features = ["blocking", "json"] }
+rocket = { version = "0.5.0-rc.1", features = ["json", "secrets" ] }
+serde = { version = "1", features = ["derive" ] }
+serde_millis = "*"
+serde_json = "*"
+serde_urlencoded = "*"

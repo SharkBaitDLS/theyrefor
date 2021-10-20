@@ -1,12 +1,10 @@
+mod auth;
+mod data;
+
 #[macro_use]
 extern crate rocket;
 
-#[get("/")]
-fn index() -> &'static str {
-   "Hello, world!"
-}
-
 #[launch]
 fn rocket() -> _ {
-   rocket::build().mount("/", routes![index])
+   rocket::build().mount("/api", routes![auth::authorize, auth::logout, data::get_guilds])
 }

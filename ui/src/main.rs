@@ -77,7 +77,7 @@ impl Model {
                   { "My Man" }
                </AppAnchor>
                <a role="button" class=classes!("navbar-burger", "burger" , active_class) aria-label="menu"
-                  aria-expanded="false" onclick=link.callback(|_| Msg::ToggleNavbar)>
+                  aria-expanded=navbar_active.to_string() onclick=link.callback(|_| Msg::ToggleNavbar)>
                   <span aria-hidden="true"></span>
                   <span aria-hidden="true"></span>
                   <span aria-hidden="true"></span>
