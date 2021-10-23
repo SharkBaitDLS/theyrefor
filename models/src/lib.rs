@@ -12,3 +12,9 @@ pub struct GuildClips {
    pub clip_names: Vec<String>,
    pub guild_name: String,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct AuthState {
+   pub redirect_to: Option<String>,
+   pub token: String,
+}

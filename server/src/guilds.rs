@@ -1,3 +1,4 @@
+use futures::TryFutureExt;
 use log::error;
 use reqwest::Client;
 use rocket::{
@@ -8,9 +9,12 @@ use rocket::{
 use serde::Deserialize;
 use theyrefor_models::Guild;
 
-use crate::{auth::get_auth_token, Env};
+use crate::{
+   auth::{get_auth_token, DiscordBotAuthBuilder},
+   Env,
+};
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, PartialEq, Eq)]
 struct DiscordGuild {
    pub name: String,
    pub id: String,
@@ -37,27 +41,41 @@ pub async fn get_guilds(
    match get_auth_token(cookies, client, env).await {
       Err(redirect) => Err(redirect),
       Ok(token) => {
-         let client = reqwest::Client::new();
-         let guilds = match client
+         let guilds: Vec<DiscordGuild> = match client
             .get("https://discord.com/api/v8/users/@me/guilds")
             .bearer_auth(token)
             .send()
+            .and_then(|body| body.json())
             .await
          {
-            Ok(body) => body,
+            Ok(data) => data,
             Err(err) => {
                error!("{:?}", err);
                return Err((Status::InternalServerError, String::new()));
             }
          };
 
-         match guilds.json::<Vec<DiscordGuild>>().await {
-            Ok(data) => Ok(Json(data.into_iter().map(|guild| guild.into()).collect())),
+         let bot_guilds: Vec<DiscordGuild> = match client
+            .get("https://discord.com/api/v8/users/@me/guilds")
+            .bot_auth(&env.bot_token)
+            .send()
+            .and_then(|body| body.json())
+            .await
+         {
+            Ok(data) => data,
             Err(err) => {
                error!("{:?}", err);
-               Err((Status::InternalServerError, String::new()))
+               return Err((Status::InternalServerError, String::new()));
             }
-         }
+         };
+
+         Ok(Json(
+            guilds
+               .into_iter()
+               .filter(|guild| bot_guilds.contains(guild))
+               .map(|guild| guild.into())
+               .collect(),
+         ))
       }
    }
 }

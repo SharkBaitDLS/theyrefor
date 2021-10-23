@@ -10,13 +10,14 @@ use rocket::{
 use std::env;
 
 mod auth;
-mod data;
+mod guilds;
 mod spa_server;
 
 use crate::spa_server::SPAServer;
 
 pub struct Env {
    base_uri: String,
+   bot_token: String,
    client_id: String,
    client_secret: String,
 }
@@ -42,13 +43,14 @@ impl Fairing for CORS {
 #[launch]
 fn rocket() -> _ {
    rocket::build()
-      .mount("/api", routes![auth::authorize, auth::logout, data::get_guilds])
+      .mount("/api", routes![auth::authorize, auth::logout, guilds::get_guilds])
       .mount("/", SPAServer::from(relative!("../ui/dist")))
       .attach(CORS)
       .manage(reqwest::Client::new())
       .manage(Env {
-         base_uri: env::var("BASE_URI").expect("BASE_URI must be in the environment"),
-         client_id: env::var("DISCORD_CLIENT_ID").expect("DISCORD_CLIENT_ID must be in the environment"),
-         client_secret: env::var("DISCORD_CLIENT_SECRET").expect("DISCORD_CLIENT_SECRET must be in the environment"),
+         base_uri: env::var("BASE_URI").expect("BASE_URI must be in the environment!"),
+         bot_token: env::var("DISCORD_BOT_TOKEN").expect("DISCORD_BOT_TOKEN must be in the environment!"),
+         client_id: env::var("DISCORD_CLIENT_ID").expect("DISCORD_CLIENT_ID must be in the environment!"),
+         client_secret: env::var("DISCORD_CLIENT_SECRET").expect("DISCORD_CLIENT_SECRET must be in the environment!"),
       })
 }

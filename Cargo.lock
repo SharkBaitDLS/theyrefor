@@ -1747,9 +1747,11 @@ name = "theyrefor-server"
 version = "0.1.0"
 dependencies = [
  "async-trait",
- "either",
- "lazy_static",
+ "base64",
+ "bincode",
+ "futures",
  "log",
+ "rand",
  "reqwest",
  "rocket",
  "serde",
@@ -1764,6 +1766,7 @@ dependencies = [
 name = "theyrefor-ui"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "getrandom",
  "gloo-timers",
  "log",
@@ -1771,6 +1774,7 @@ dependencies = [
  "reqwasm",
  "serde",
  "theyrefor-models",
+ "urlencoding",
  "wasm-logger",
  "web-sys",
  "yew",

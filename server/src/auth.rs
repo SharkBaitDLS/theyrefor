@@ -1,15 +1,21 @@
-use reqwest::{Client, StatusCode};
+use rand::{distributions::Alphanumeric, Rng};
+use reqwest::{Client, RequestBuilder, StatusCode};
 use rocket::{
    http::{Cookie, CookieJar, SameSite, Status},
    response::Redirect,
    State,
 };
 use serde::{Deserialize, Serialize};
-use std::time::{Duration, Instant};
+use std::{
+   fmt,
+   time::{Duration, Instant},
+};
+use theyrefor_models::AuthState;
 
 use crate::Env;
 
 const TOKEN_COOKIE_NAME: &str = "token";
+const SESSION_COOKIE_NAME: &str = "session";
 
 #[derive(Serialize, Deserialize)]
 struct AuthToken {
@@ -43,13 +49,45 @@ struct DiscordAuthResponse {
    refresh_token: String,
 }
 
-fn redirect_for_auth(env: &State<Env>) -> (Status, String) {
+pub(crate) trait DiscordBotAuthBuilder {
+   fn bot_auth<T: fmt::Display>(self, token: T) -> RequestBuilder;
+}
+
+impl DiscordBotAuthBuilder for RequestBuilder {
+   fn bot_auth<T>(self, token: T) -> RequestBuilder
+   where
+      T: fmt::Display,
+   {
+      let header_value = format!("Bot {}", token);
+      self.header(reqwest::header::AUTHORIZATION, header_value)
+   }
+}
+
+fn build_auth_url(env: &State<Env>, cookies: &CookieJar<'_>) -> (Status, String) {
+   let token: String = rand::thread_rng()
+      .sample_iter(&Alphanumeric)
+      .take(30)
+      .map(char::from)
+      .collect();
+
+   let mut session_cookie = Cookie::new(SESSION_COOKIE_NAME, token.clone());
+   // TODO: remove once not testing via localhost/HTTP
+   session_cookie.set_secure(false);
+   session_cookie.set_same_site(SameSite::Lax);
+   cookies.add_private(session_cookie);
+
+   let state = AuthState {
+      redirect_to: None,
+      token,
+   };
    (
       Status::Unauthorized,
       format!(
-         "https://discord.com/api/oauth2/authorize?client_id={}&redirect_uri={}&response_type=code&scope=guilds",
+         "{}?client_id={}&redirect_uri={}&response_type=code&scope=guilds&state={}",
+         "https://discord.com/api/oauth2/authorize",
          env.client_id,
-         urlencoding::encode(&format!("{}/api/auth", env.base_uri))
+         urlencoding::encode(&format!("{}/api/auth", env.base_uri)),
+         base64::encode(bincode::serialize(&state).unwrap())
       ),
    )
 }
@@ -65,7 +103,7 @@ pub async fn get_auth_token(
          refresh_token(auth, cookies, client, env).await.map(|auth| auth.token)
       }
       Some(auth) => Ok(auth.token),
-      None => Err(redirect_for_auth(env)),
+      None => Err(build_auth_url(env, cookies)),
    }
 }
 
@@ -95,7 +133,7 @@ async fn refresh_token(
       client,
    )
    .await
-   .map_err(|_| redirect_for_auth(env))
+   .map_err(|_| build_auth_url(env, cookies))
 }
 
 async fn update_token<T: Serialize>(
@@ -157,22 +195,38 @@ pub fn logout(cookies: &CookieJar<'_>) {
    cookies.remove_private(Cookie::named(TOKEN_COOKIE_NAME));
 }
 
-#[get("/auth?<code>")]
+#[get("/auth?<code>&<state>")]
 pub async fn authorize(
-   code: &str, cookies: &CookieJar<'_>, client: &State<Client>, env: &State<Env>,
+   code: &str, state: &str, cookies: &CookieJar<'_>, client: &State<Client>, env: &State<Env>,
 ) -> Result<Redirect, Status> {
-   // TODO: MOVE TO ENVIRONMENT VARIABLES
+   let state: AuthState = match base64::decode(state)
+      .ok()
+      .as_ref()
+      .and_then(|bytes| bincode::deserialize(bytes).ok())
+   {
+      Some(data) => data,
+      None => return Err(Status::Forbidden),
+   };
+   if cookies
+      .get_private(SESSION_COOKIE_NAME)
+      .map(|cookie| cookie.value().to_string())
+      .filter(|session| *session == state.token)
+      .is_none()
+   {
+      return Err(Status::Forbidden);
+   }
+
    update_token(
       DiscordAuthRequest {
          client_id: &env.client_id,
          client_secret: &env.client_secret,
          grant_type: "authorization_code",
          code,
-         redirect_uri: "http://localhost:8000/api/auth",
+         redirect_uri: &format!("{}/api/auth", env.base_uri),
       },
       cookies,
       client,
    )
    .await
-   .map(|_| Redirect::to(uri!("/")))
+   .map(|_| Redirect::to(state.redirect_to.unwrap_or_else(|| "/".to_string())))
 }
