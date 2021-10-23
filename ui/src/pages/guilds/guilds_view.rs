@@ -38,29 +38,34 @@ impl super::Guilds {
                   </div>
                </div>
 
-               <div class="tile is-parent container">
-                  {
-                     for response.iter().map(|guild| {
-                        html! {
-                           <AppAnchor classes="tile is-parent" route=AppRoute::Soundboard(guild.id)>
-                              <div class="tile is-child card">
-                                 <div class="card-content">
-                                    <div class="media">
-                                       <div class="media-left">
-                                          <figure class="image is-128x128">
-                                             <img src=guild.image_url.clone() width="128" height="128" />
-                                          </figure>
-                                       </div>
-                                       <div class="media-content">
-                                          <p class="title is-4">{ guild.name.clone() }</p>
-                                       </div>
-                                    </div>
+               <div class="tile is-mobile is-parent container is-flex is-flex-wrap-wrap">
+               {
+                  for response.iter().map(|guild| {
+                     html! {
+                        <AppAnchor classes="tile is-parent mx-3 my-3" route=AppRoute::Soundboard(guild.id)>
+                        {
+                           match guild.icon.clone() {
+                              Some(icon) => html! {
+                                 <div class="tile is-child">
+                                    <figure>
+                                       <p class="image is-128x128 has-tooltip-arrow has-tooltip-top"
+                                          data-tooltip=guild.name.clone()>
+                                          <img class="is-rounded" src=icon />
+                                       </p>
+                                    </figure>
                                  </div>
-                              </div>
-                           </AppAnchor>
+                              },
+                              None => html! {
+                                 <div class="tile is-child is-flex is-align-items-center is-justify-content-center image is-128x128">
+                                    <div><b>{ guild.name.clone() }</b></div>
+                                 </div>
+                              }
+                           }
                         }
-                     })
-                  }
+                        </AppAnchor>
+                     }
+                  })
+               }
                </div>
             </div>
          },

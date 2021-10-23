@@ -1290,6 +1290,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "reqwasm"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e34bf31941fb867ae9386a4b443b388e6713574944e6517136ee21a6a93cf996"
+dependencies = [
+ "anyhow",
+ "futures",
+ "js-sys",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
+]
+
+[[package]]
 name = "reqwest"
 version = "0.11.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1721,11 +1738,15 @@ dependencies = [
 [[package]]
 name = "theyrefor-models"
 version = "0.1.0"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "theyrefor-server"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "either",
  "lazy_static",
  "log",
@@ -1735,6 +1756,7 @@ dependencies = [
  "serde_json",
  "serde_millis",
  "serde_urlencoded",
+ "theyrefor-models",
  "urlencoding",
 ]
 
@@ -1746,9 +1768,11 @@ dependencies = [
  "gloo-timers",
  "log",
  "rand",
- "reqwest",
+ "reqwasm",
+ "serde",
  "theyrefor-models",
  "wasm-logger",
+ "web-sys",
  "yew",
  "yew-router",
  "yewtil",

@@ -1,21 +1,41 @@
-use either::Either;
 use log::error;
 use reqwest::Client;
 use rocket::{
    http::{CookieJar, Status},
-   response::Redirect,
-   serde::json::Value,
+   serde::json::Json,
    State,
 };
+use serde::Deserialize;
+use theyrefor_models::Guild;
 
 use crate::{auth::get_auth_token, Env};
+
+#[derive(Debug, Deserialize)]
+struct DiscordGuild {
+   pub name: String,
+   pub id: String,
+   pub icon: Option<String>,
+}
+
+impl From<DiscordGuild> for Guild {
+   fn from(val: DiscordGuild) -> Self {
+      Guild {
+         name: val.name.clone(),
+         id: val.id.parse().unwrap(),
+         icon: val
+            .icon
+            .as_ref()
+            .map(|icon| format!("https://cdn.discordapp.com/icons/{}/{}.png", val.id, icon)),
+      }
+   }
+}
 
 #[get("/guilds")]
 pub async fn get_guilds(
    cookies: &CookieJar<'_>, client: &State<Client>, env: &State<Env>,
-) -> Result<Value, Either<Status, Redirect>> {
+) -> Result<Json<Vec<Guild>>, (Status, String)> {
    match get_auth_token(cookies, client, env).await {
-      Err(redirect) => Err(Either::Right(redirect)),
+      Err(redirect) => Err(redirect),
       Ok(token) => {
          let client = reqwest::Client::new();
          let guilds = match client
@@ -27,15 +47,15 @@ pub async fn get_guilds(
             Ok(body) => body,
             Err(err) => {
                error!("{:?}", err);
-               return Err(Either::Left(Status::InternalServerError));
+               return Err((Status::InternalServerError, String::new()));
             }
          };
 
-         match guilds.text().await {
-            Ok(data) => Ok(Value::String(data)),
+         match guilds.json::<Vec<DiscordGuild>>().await {
+            Ok(data) => Ok(Json(data.into_iter().map(|guild| guild.into()).collect())),
             Err(err) => {
                error!("{:?}", err);
-               Err(Either::Left(Status::InternalServerError))
+               Err((Status::InternalServerError, String::new()))
             }
          }
       }

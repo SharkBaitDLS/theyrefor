@@ -43,17 +43,20 @@ struct DiscordAuthResponse {
    refresh_token: String,
 }
 
-fn redirect_for_auth(env: &State<Env>) -> Redirect {
-   Redirect::to(format!(
-      "https://discord.com/api/oauth2/authorize?client_id={}&redirect_uri={}&response_type=code&scope=guilds",
-      env.client_id,
-      urlencoding::encode(&format!("{}/api/auth", env.base_uri))
-   ))
+fn redirect_for_auth(env: &State<Env>) -> (Status, String) {
+   (
+      Status::Unauthorized,
+      format!(
+         "https://discord.com/api/oauth2/authorize?client_id={}&redirect_uri={}&response_type=code&scope=guilds",
+         env.client_id,
+         urlencoding::encode(&format!("{}/api/auth", env.base_uri))
+      ),
+   )
 }
 
 pub async fn get_auth_token(
    cookies: &CookieJar<'_>, client: &State<Client>, env: &State<Env>,
-) -> Result<String, Redirect> {
+) -> Result<String, (Status, String)> {
    match cookies
       .get_private(TOKEN_COOKIE_NAME)
       .and_then(|cookie| serde_json::from_str::<AuthToken>(cookie.value()).ok())
@@ -80,7 +83,7 @@ fn set_auth_token(token: AuthToken, cookies: &CookieJar<'_>) -> Result<AuthToken
 
 async fn refresh_token(
    token: AuthToken, cookies: &CookieJar<'_>, client: &State<Client>, env: &State<Env>,
-) -> Result<AuthToken, Redirect> {
+) -> Result<AuthToken, (Status, String)> {
    update_token(
       DiscordRefreshRequest {
          client_id: &env.client_id,

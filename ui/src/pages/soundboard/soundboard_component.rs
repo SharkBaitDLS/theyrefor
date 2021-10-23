@@ -1,6 +1,6 @@
 use gloo_timers::future::TimeoutFuture;
 use rand::{distributions::Alphanumeric, Rng};
-use reqwest::Error;
+use reqwasm::Error;
 use theyrefor_models::GuildClips;
 use yew::{Component, ComponentLink, Html, Properties, ShouldRender};
 use yewtil::future::LinkFuture;

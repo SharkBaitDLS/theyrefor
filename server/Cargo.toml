@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2018"
 
 [dependencies]
+async-trait = "*"
 either = "*"
 lazy_static = "*"
 log = "*"
@@ -13,4 +14,5 @@ serde = { version = "1", features = ["derive" ] }
 serde_millis = "*"
 serde_json = "*"
 serde_urlencoded = "*"
+theyrefor-models = { path = "../models" }
 urlencoding = "*"

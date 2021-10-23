@@ -1,26 +1,12 @@
-use gloo_timers::future::TimeoutFuture;
-use reqwest::Error;
+use reqwasm::Error;
 use theyrefor_models::Guild;
 use yew::{Component, ComponentLink, Html, ShouldRender};
 use yewtil::future::LinkFuture;
 
-// TODO: actually implement with HTTP
-async fn get_guilds() -> Result<Vec<Guild>, Error> {
-   TimeoutFuture::new(2_000).await;
-   Ok::<Vec<Guild>, Error>(vec![
-      Guild {
-         name: "Lamer Gamers".to_string(),
-         id: 1,
-         image_url: "https://cdn.discordapp.com/icons/82228700078153728/de0d9079caf52e6d24f98b78c8f21871.png"
-            .to_string(),
-      },
-      Guild {
-         name: "Lamer Gamers 2".to_string(),
-         id: 2,
-         image_url: "https://cdn.discordapp.com/icons/82228700078153728/de0d9079caf52e6d24f98b78c8f21871.png"
-            .to_string(),
-      },
-   ])
+use crate::http_client;
+
+async fn get_guilds() -> Result<Option<Vec<Guild>>, Error> {
+   http_client::get("/api/guilds").await
 }
 
 pub enum Msg {
@@ -39,7 +25,10 @@ impl Component for Guilds {
    fn create(_props: Self::Properties, link: ComponentLink<Self>) -> Self {
       link.send_future(async {
          match get_guilds().await {
-            Ok(guilds) => Msg::Done(guilds),
+            Ok(maybe_guilds) => match maybe_guilds {
+               Some(guilds) => Msg::Done(guilds),
+               None => Msg::Fail,
+            },
             Err(_) => Msg::Fail,
          }
       });

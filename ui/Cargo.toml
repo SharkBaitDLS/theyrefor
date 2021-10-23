@@ -11,8 +11,10 @@ gloo-timers = { features = ["futures"], version = "0.2" }
 log = "0.4"
 getrandom = { features = ["js"], version = "0.2" }
 rand = "0.8"
-reqwest = "0.11"
+reqwasm = "0.2"
+serde = "1.0"
 wasm-logger = "0.2"
+web-sys = { features = ["Location", "Window"], version = "0.3" }
 yew = "0.18"
 yew-router = "0.15"
 yewtil = "0.4"
