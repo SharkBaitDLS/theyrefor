@@ -35,9 +35,9 @@ impl Fairing for CORS {
       }
    }
 
-   async fn on_response<'r>(&self, _request: &'r Request<'_>, response: &mut Response<'r>) {
-      // TODO: restrict
-      response.set_header(Header::new("Access-Control-Allow-Origin", "*"));
+   async fn on_response<'r>(&self, request: &'r Request<'_>, response: &mut Response<'r>) {
+      let env = request.rocket().state::<Env>().unwrap();
+      response.set_header(Header::new("Access-Control-Allow-Origin", &env.base_uri));
       response.set_header(Header::new("Access-Control-Allow-Methods", "POST, GET"));
    }
 }

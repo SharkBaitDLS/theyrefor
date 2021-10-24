@@ -1,6 +1,12 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct AuthState {
+   pub redirect_to: Option<String>,
+   pub token: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Guild {
    pub name: String,
    pub id: String,
@@ -18,10 +24,4 @@ pub struct User {
    pub username: String,
    pub id: String,
    pub avatar: Option<String>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct AuthState {
-   pub redirect_to: Option<String>,
-   pub token: String,
 }

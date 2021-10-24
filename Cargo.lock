@@ -555,10 +555,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7fcd999463524c52659517fe2cea98493cfe485d10565e7b0fb07dbba7ad2753"
 dependencies = [
  "cfg-if",
- "js-sys",
  "libc",
  "wasi",
- "wasm-bindgen",
 ]
 
 [[package]]
@@ -626,8 +624,6 @@ version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "47204a46aaff920a1ea58b11d03dec6f704287d27561724a4631e450654a891f"
 dependencies = [
- "futures-channel",
- "futures-core",
  "js-sys",
  "wasm-bindgen",
  "web-sys",
@@ -1769,10 +1765,7 @@ dependencies = [
  "anyhow",
  "base64",
  "bincode",
- "getrandom",
- "gloo-timers",
  "log",
- "rand",
  "reqwasm",
  "serde",
  "theyrefor-models",

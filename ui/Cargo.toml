@@ -5,17 +5,13 @@ edition = "2018"
 authors = ["Isaac M. Good <imgood@imgoodproductions.org>"]
 
 [dependencies]
-theyrefor-models = { path = "../models" }
-
 anyhow = "1.0"
 base64 = "0.13"
 bincode = "1.3"
-getrandom = { features = ["js"], version = "0.2" }
-gloo-timers = { features = ["futures"], version = "0.2" }
-log = "0.4"
-rand = "0.8"
+log = "*"
 reqwasm = "0.2"
 serde = "1.0"
+theyrefor-models = { path = "../models" }
 url = "2.2"
 urlencoding = "2.1"
 wasm-bindgen-futures = "0.4"
