@@ -1767,6 +1767,8 @@ name = "theyrefor-ui"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "base64",
+ "bincode",
  "getrandom",
  "gloo-timers",
  "log",
@@ -1774,6 +1776,7 @@ dependencies = [
  "reqwasm",
  "serde",
  "theyrefor-models",
+ "url",
  "urlencoding",
  "wasm-logger",
  "web-sys",
