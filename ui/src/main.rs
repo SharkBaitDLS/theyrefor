@@ -124,37 +124,47 @@ impl Model {
                      { "Clips" }
                   </AppAnchor>
                </div>
-            </div>
-            <div class="navbar-end is-mobile">
-            {
-               match user {
-                  Some(user) => html! {
-                     <div class="navbar-item has-dropdown is-hoverable">
-                        <div class="navbar-item">
-                           {
-                              match &user.avatar {
-                                 None => html! {},
-                                 Some(image) => html! {
-                                    <figure class="image mr-2">
-                                       <img class="is-rounded" src=image.clone() height="32" width="32" />
-                                    </figure>
-                                 }
-                              }
-                           }
-                           <div class="has-text-white">{ &user.username }</div>
-                        </div>
-                        <div class="navbar-dropdown">
+               <div class="navbar-end">
+               {
+                  match user {
+                     Some(user) => if navbar_active {
+                        html! {
                            <a class="navbar-item" onclick=link.callback(|_| {
                               let mut router: RouteAgentDispatcher<()> = RouteAgentDispatcher::new();
                               router.send(RouteRequest::ReplaceRoute(Route::from(AppRoute::Home)));
                               Msg::Logout
-                           })>{ "Log Out" }</a>
-                        </div>
-                     </div>
-                  },
-                  None => html! { <a class="navbar-item" onclick=link.callback(|_| Msg::Login)>{ "Log In" }</a> }
+                           })>{ "Log Out " }<p class="has-text-grey">{ format!("(signed in as {})", &user.username) }</p></a>
+                        }
+                     } else {
+                        html! {
+                           <div class="navbar-item has-dropdown is-hoverable">
+                              <div class="navbar-item">
+                                 {
+                                    match &user.avatar {
+                                       None => html! {},
+                                       Some(image) => html! {
+                                          <figure class="image mr-2">
+                                             <img class="is-rounded" src=image.clone() height="32" width="32" />
+                                          </figure>
+                                       }
+                                    }
+                                 }
+                                 <div class="has-text-white">{ &user.username }</div>
+                              </div>
+                              <div class="navbar-dropdown">
+                                 <a class="navbar-item" onclick=link.callback(|_| {
+                                    let mut router: RouteAgentDispatcher<()> = RouteAgentDispatcher::new();
+                                    router.send(RouteRequest::ReplaceRoute(Route::from(AppRoute::Home)));
+                                    Msg::Logout
+                                 })>{ "Log Out" }</a>
+                              </div>
+                           </div>
+                        }
+                     },
+                     None => html! { <a class="navbar-item" onclick=link.callback(|_| Msg::Login)>{ "Log In" }</a> }
+                  }
                }
-            }
+               </div>
             </div>
          </nav>
       }
