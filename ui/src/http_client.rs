@@ -11,7 +11,7 @@ use yew::services::fetch::StatusCode;
 
 static STATE_PARAM: &str = "state";
 
-pub async fn get<T>(uri: &str) -> Result<Option<T>, Error>
+pub async fn get_with_auth<T>(uri: &str) -> Result<Option<T>, Error>
 where
    T: DeserializeOwned,
 {

@@ -99,7 +99,7 @@ pub async fn get_auth_token(
       .get_private(TOKEN_COOKIE_NAME)
       .and_then(|cookie| serde_json::from_str::<AuthToken>(cookie.value()).ok())
    {
-      Some(auth) if auth.expiration > Instant::now() => {
+      Some(auth) if auth.expiration < Instant::now() => {
          refresh_token(auth, cookies, client, env).await.map(|auth| auth.token)
       }
       Some(auth) => Ok(auth.token),
@@ -188,6 +188,11 @@ async fn update_token<T: Serialize>(
          })
       }
    }
+}
+
+#[get("/login")]
+pub async fn login(cookies: &CookieJar<'_>, client: &State<Client>, env: &State<Env>) -> Result<(), (Status, String)> {
+   get_auth_token(cookies, client, env).await.map(|_| ())
 }
 
 #[post("/logout")]

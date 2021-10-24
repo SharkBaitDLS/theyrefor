@@ -1778,6 +1778,7 @@ dependencies = [
  "theyrefor-models",
  "url",
  "urlencoding",
+ "wasm-bindgen-futures",
  "wasm-logger",
  "web-sys",
  "yew",

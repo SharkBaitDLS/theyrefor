@@ -6,7 +6,7 @@ use yewtil::future::LinkFuture;
 use crate::http_client;
 
 async fn get_guilds() -> Result<Option<Vec<Guild>>, Error> {
-   http_client::get("/api/guilds").await
+   http_client::get_with_auth("/api/guilds").await
 }
 
 pub enum Msg {

@@ -1,5 +1,10 @@
+use log::debug;
+use reqwasm::http::Request;
+use theyrefor_models::User;
 use yew::{classes, html, Component, ComponentLink, Html, ShouldRender};
-use yew_router::{route::Route, switch::Permissive};
+use yew_router::agent::RouteRequest;
+use yew_router::{agent::RouteAgentDispatcher, route::Route, switch::Permissive};
+use yewtil::future::LinkFuture;
 
 mod http_client;
 mod pages;
@@ -10,27 +15,53 @@ use app_route::{AppAnchor, AppRoute, AppRouter};
 pub enum Msg {
    ToggleNavbar,
    DisableNavbar,
+   UserData(Option<User>),
+   Login,
+   Logout,
+}
+
+async fn get_user() -> Option<User> {
+   match Request::get("/api/user").send().await {
+      Ok(response) if response.status() == 200 => response.json().await.ok(),
+      _ => None,
+   }
 }
 
 pub struct Model {
    link: ComponentLink<Self>,
    navbar_active: bool,
+   user: Option<User>,
 }
 impl Component for Model {
    type Message = Msg;
    type Properties = ();
 
    fn create(_props: Self::Properties, link: ComponentLink<Self>) -> Self {
+      link.send_future(async { Msg::UserData(get_user().await) });
       Self {
          link,
          navbar_active: false,
+         user: None,
       }
    }
 
    fn update(&mut self, msg: Self::Message) -> ShouldRender {
+      let current_user = self.user.clone();
       match msg {
          Msg::ToggleNavbar => self.navbar_active = !self.navbar_active,
          Msg::DisableNavbar => self.navbar_active = false,
+         Msg::UserData(user) => self.user = user,
+         Msg::Login => wasm_bindgen_futures::spawn_local(async {
+            if let Err(err) = http_client::get_with_auth::<()>("/api/login").await {
+               debug!("Failed to log in: {:?}", err);
+            }
+         }),
+         Msg::Logout => self.link.send_future(async {
+            match Request::post("/api/logout").send().await {
+               Ok(response) if response.status() == 200 => Msg::UserData(None),
+               _ => Msg::UserData(current_user),
+            }
+         }),
       }
       true
    }
@@ -53,6 +84,8 @@ impl Component for Model {
                <div class="content has-text-centered">
                   { "Powered by " }
                   <a href="https://yew.rs">{ "Yew" }</a>
+                  { " on "}
+                  <a href="https://rocket.rs">{ "Rocket" }</a>
                   { " using " }
                   <a href="https://bulma.io">{ "Bulma" }</a>
                </div>
@@ -66,6 +99,7 @@ impl Model {
       let Self {
          ref link,
          navbar_active,
+         ref user,
          ..
       } = *self;
 
@@ -90,6 +124,37 @@ impl Model {
                      { "Clips" }
                   </AppAnchor>
                </div>
+            </div>
+            <div class="navbar-end is-mobile">
+            {
+               match user {
+                  Some(user) => html! {
+                     <div class="navbar-item has-dropdown is-hoverable">
+                        <div class="navbar-item">
+                           {
+                              match &user.avatar {
+                                 None => html! {},
+                                 Some(image) => html! {
+                                    <figure class="image mr-2">
+                                       <img class="is-rounded" src=image.clone() height="32" width="32" />
+                                    </figure>
+                                 }
+                              }
+                           }
+                           <div class="has-text-white">{ &user.username }</div>
+                        </div>
+                        <div class="navbar-dropdown">
+                           <a class="navbar-item" onclick=link.callback(|_| {
+                              let mut router: RouteAgentDispatcher<()> = RouteAgentDispatcher::new();
+                              router.send(RouteRequest::ReplaceRoute(Route::from(AppRoute::Home)));
+                              Msg::Logout
+                           })>{ "Log Out" }</a>
+                        </div>
+                     </div>
+                  },
+                  None => html! { <a class="navbar-item" onclick=link.callback(|_| Msg::Login)>{ "Log In" }</a> }
+               }
+            }
             </div>
          </nav>
       }

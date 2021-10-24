@@ -18,6 +18,7 @@ reqwasm = "0.2"
 serde = "1.0"
 url = "2.2"
 urlencoding = "2.1"
+wasm-bindgen-futures = "0.4"
 wasm-logger = "0.2"
 web-sys = { features = ["Location", "Window"], version = "0.3" }
 yew = "0.18"

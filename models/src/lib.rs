@@ -13,6 +13,13 @@ pub struct GuildClips {
    pub guild_name: String,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct User {
+   pub username: String,
+   pub id: String,
+   pub avatar: Option<String>,
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AuthState {
    pub redirect_to: Option<String>,

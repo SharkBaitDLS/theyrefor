@@ -12,6 +12,7 @@ use std::env;
 mod auth;
 mod guilds;
 mod spa_server;
+mod user;
 
 use crate::spa_server::SPAServer;
 
@@ -43,7 +44,16 @@ impl Fairing for CORS {
 #[launch]
 fn rocket() -> _ {
    rocket::build()
-      .mount("/api", routes![auth::authorize, auth::logout, guilds::get_guilds])
+      .mount(
+         "/api",
+         routes![
+            auth::authorize,
+            auth::login,
+            auth::logout,
+            guilds::get_guilds,
+            user::get_user
+         ],
+      )
       .mount("/", SPAServer::from(relative!("../ui/dist")))
       .attach(CORS)
       .manage(reqwest::Client::new())
