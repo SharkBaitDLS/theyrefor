@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Guild {
    pub name: String,
-   pub id: u64,
+   pub id: String,
    pub icon: Option<String>,
 }
 

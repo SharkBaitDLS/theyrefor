@@ -19,7 +19,7 @@ impl super::Soundboard {
                            <p>{ "Error" }</p>
                         </div>
                         <div class="message-body">
-                           { "We were unable to your server clips. Please try again." }
+                           { "We were unable retrieve to your server clips. Please try again." }
                         </div>
                      </article>
                   </div>

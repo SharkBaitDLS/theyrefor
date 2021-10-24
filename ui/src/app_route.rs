@@ -3,7 +3,7 @@ use yew_router::{components::RouterAnchor, router::Router, switch::Permissive, S
 #[derive(Clone, Debug, Switch)]
 pub enum AppRoute {
    #[to = "/clips/{guild_id}"]
-   Soundboard(u64),
+   Soundboard(String),
    #[to = "/clips"]
    Guilds,
    #[to = "/page-not-found"]

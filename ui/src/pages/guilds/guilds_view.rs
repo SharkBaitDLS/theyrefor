@@ -42,12 +42,12 @@ impl super::Guilds {
                {
                   for response.iter().map(|guild| {
                      html! {
-                        <AppAnchor classes="tile is-parent mx-3 my-3" route=AppRoute::Soundboard(guild.id)>
+                        <AppAnchor classes="tile is-parent mx-3 my-3" route=AppRoute::Soundboard(guild.id.clone())>
                         {
                            match guild.icon.clone() {
                               Some(icon) => html! {
                                  <div class="tile is-child">
-                                    <figure>
+                                    <figure class="is-flex-mobile is-justify-content-center">
                                        <p class="image is-128x128 has-tooltip-arrow has-tooltip-top"
                                           data-tooltip=guild.name.clone()>
                                           <img class="is-rounded" src=icon />

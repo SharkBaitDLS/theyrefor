@@ -108,10 +108,10 @@ impl Model {
       html! {
          <nav class="navbar is-primary" role="navigation" aria-label="main navigation">
             <div class="navbar-brand">
-               <AppAnchor classes="navbar-item is-size-3" route=AppRoute::Home>
+               <AppAnchor classes="navbar-item is-size-3 my-0 py-0" route=AppRoute::Home>
                   { "My Man" }
                </AppAnchor>
-               <a role="button" class=classes!("navbar-burger", "burger" , active_class) aria-label="menu"
+               <a role="button" class=classes!("navbar-burger", "burger", active_class) aria-label="menu"
                   aria-expanded=navbar_active.to_string() onclick=link.callback(|_| Msg::ToggleNavbar)>
                   <span aria-hidden="true"></span>
                   <span aria-hidden="true"></span>
@@ -119,11 +119,19 @@ impl Model {
                </a>
             </div>
             <div class=classes!("navbar-menu", active_class) onclick=link.callback(|_| Msg::DisableNavbar)>
-               <div class="navbar-start">
-                  <AppAnchor classes="navbar-item" route=AppRoute::Guilds>
-                     { "Clips" }
-                  </AppAnchor>
-               </div>
+               {
+                  if user.is_some() {
+                     html! {
+                        <div class="navbar-start">
+                           <AppAnchor classes="navbar-item" route=AppRoute::Guilds>
+                              { "Clips" }
+                           </AppAnchor>
+                        </div>
+                     }
+                  } else {
+                     html! {}
+                  }
+               }
                <div class="navbar-end">
                {
                   match user {
@@ -143,13 +151,13 @@ impl Model {
                                     match &user.avatar {
                                        None => html! {},
                                        Some(image) => html! {
-                                          <figure class="image mr-2">
-                                             <img class="is-rounded" src=image.clone() height="32" width="32" />
+                                          <figure class="image is-32x32">
+                                             <img class="is-rounded" style="max-height:100%" src=image.clone() />
                                           </figure>
                                        }
                                     }
                                  }
-                                 <div class="has-text-white">{ &user.username }</div>
+                                 <div class="has-text-white ml-2">{ &user.username }</div>
                               </div>
                               <div class="navbar-dropdown">
                                  <a class="navbar-item" onclick=link.callback(|_| {

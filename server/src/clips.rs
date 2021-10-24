@@ -8,7 +8,10 @@ use rocket::{
 use serde::Deserialize;
 use theyrefor_models::GuildClips;
 
-use crate::{auth::get_auth_token, Env};
+use crate::{
+   auth::{get_auth_token, DiscordBotAuthBuilder},
+   Env,
+};
 
 #[derive(Deserialize)]
 struct Guild {
@@ -21,10 +24,10 @@ pub async fn get_clips(
 ) -> Result<Json<GuildClips>, (Status, String)> {
    match get_auth_token(cookies, client, env).await {
       Err(redirect) => Err(redirect),
-      Ok(token) => {
+      Ok(_) => {
          let guild: Guild = match client
             .get(format!("https://discord.com/api/v8/guilds/{}", id))
-            .bearer_auth(token)
+            .bot_auth(&env.bot_token)
             .send()
             .and_then(|body| body.json())
             .await

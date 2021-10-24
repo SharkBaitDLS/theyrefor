@@ -25,7 +25,7 @@ impl From<DiscordGuild> for Guild {
    fn from(val: DiscordGuild) -> Self {
       Guild {
          name: val.name.clone(),
-         id: val.id.parse().unwrap(),
+         id: val.id.clone(),
          icon: val
             .icon
             .as_ref()

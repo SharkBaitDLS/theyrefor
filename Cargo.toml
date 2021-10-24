@@ -1,2 +1,8 @@
 [workspace]
 members = ["models", "server", "ui"]
+
+[profile.release]
+lto = true
+
+[profile.release.package.theyrefor-ui]
+opt-level = 's'

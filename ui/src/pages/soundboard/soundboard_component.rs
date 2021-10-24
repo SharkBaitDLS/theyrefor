@@ -7,10 +7,10 @@ use crate::http_client;
 
 #[derive(Clone, Debug, PartialEq, Properties)]
 pub struct Props {
-   pub guild_id: u64,
+   pub guild_id: String,
 }
 
-async fn get_clips(guild_id: u64) -> Result<Option<GuildClips>, Error> {
+async fn get_clips(guild_id: String) -> Result<Option<GuildClips>, Error> {
    http_client::get_with_auth(&format!("/api/clips/{}", guild_id)).await
 }
 
