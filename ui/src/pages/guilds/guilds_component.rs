@@ -25,11 +25,8 @@ impl Component for Guilds {
    fn create(_props: Self::Properties, link: ComponentLink<Self>) -> Self {
       link.send_future(async {
          match get_guilds().await {
-            Ok(maybe_guilds) => match maybe_guilds {
-               Some(guilds) => Msg::Done(guilds),
-               None => Msg::Fail,
-            },
-            Err(_) => Msg::Fail,
+            Ok(Some(guilds)) => Msg::Done(guilds),
+            _ => Msg::Fail,
          }
       });
       Self { guilds: None }

@@ -10,6 +10,7 @@ use rocket::{
 use std::env;
 
 mod auth;
+mod clips;
 mod guilds;
 mod spa_server;
 mod user;
@@ -50,6 +51,7 @@ fn rocket() -> _ {
             auth::authorize,
             auth::login,
             auth::logout,
+            clips::get_clips,
             guilds::get_guilds,
             user::get_user
          ],

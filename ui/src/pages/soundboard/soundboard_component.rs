@@ -1,34 +1,17 @@
-use gloo_timers::future::TimeoutFuture;
-use rand::{distributions::Alphanumeric, Rng};
 use reqwasm::Error;
 use theyrefor_models::GuildClips;
 use yew::{Component, ComponentLink, Html, Properties, ShouldRender};
 use yewtil::future::LinkFuture;
+
+use crate::http_client;
 
 #[derive(Clone, Debug, PartialEq, Properties)]
 pub struct Props {
    pub guild_id: u64,
 }
 
-// TODO: actually implement with HTTP
-async fn get_clips(_guild_id: u64) -> Result<GuildClips, Error> {
-   let mut result = Vec::new();
-
-   for _ in 1..1000 {
-      let rand_string: String = rand::thread_rng()
-         .sample_iter(&Alphanumeric)
-         .take(30)
-         .map(char::from)
-         .collect();
-      result.push(rand_string);
-   }
-
-   TimeoutFuture::new(2_000).await;
-
-   Ok(GuildClips {
-      clip_names: result,
-      guild_name: "Lamer Gamers".to_string(),
-   })
+async fn get_clips(guild_id: u64) -> Result<Option<GuildClips>, Error> {
+   http_client::get_with_auth(&format!("/api/clips/{}", guild_id)).await
 }
 
 pub enum Msg {
@@ -46,8 +29,8 @@ impl Component for Soundboard {
    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
       link.send_future(async move {
          match get_clips(props.guild_id).await {
-            Ok(clips) => Msg::Done(clips),
-            Err(_) => Msg::Fail,
+            Ok(Some(clips)) => Msg::Done(clips),
+            _ => Msg::Fail,
          }
       });
       Self { data: None }
