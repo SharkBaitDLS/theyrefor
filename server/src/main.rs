@@ -3,7 +3,6 @@ extern crate rocket;
 
 use rocket::{
    fairing::{Fairing, Info, Kind},
-   fs::relative,
    http::Header,
    Request, Response,
 };
@@ -62,9 +61,9 @@ fn rocket() -> _ {
       .mount(
          "/",
          SPAServer::from(if figment.profile().as_str() == "release" {
-            relative!("dist")
+            "dist"
          } else {
-            relative!("../ui/dist")
+            "../ui/dist"
          }),
       )
       .attach(CORS)
