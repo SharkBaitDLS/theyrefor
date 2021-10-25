@@ -14,7 +14,8 @@ jobs:
     - uses: actions-rs/toolchain@v1
       with:
         toolchain: stable
-        components: clippy, rustfmt, trunk
+        components: clippy, rustfmt
+    - uses: jetli/trunk-action@v0.1.0
     - name: Cache registry
       uses: actions/cache@v1
       with:
