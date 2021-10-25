@@ -1,3 +1,8 @@
+use std::{
+   fmt,
+   time::{Duration, Instant},
+};
+
 use rand::{distributions::Alphanumeric, Rng};
 use reqwest::{Client, RequestBuilder, StatusCode};
 use rocket::{
@@ -6,10 +11,6 @@ use rocket::{
    State,
 };
 use serde::{Deserialize, Serialize};
-use std::{
-   fmt,
-   time::{Duration, Instant},
-};
 use theyrefor_models::AuthState;
 
 use crate::Env;

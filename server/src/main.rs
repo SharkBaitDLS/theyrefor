@@ -1,12 +1,13 @@
 #[macro_use]
 extern crate rocket;
 
+use std::env;
+
 use rocket::{
    fairing::{Fairing, Info, Kind},
    http::Header,
    Request, Response,
 };
-use std::env;
 
 mod auth;
 mod clips;
@@ -21,6 +22,7 @@ pub struct Env {
    bot_token: String,
    client_id: String,
    client_secret: String,
+   clip_directory: String,
 }
 
 pub struct CORS;
@@ -73,5 +75,6 @@ fn rocket() -> _ {
          bot_token: env::var("DISCORD_BOT_TOKEN").expect("DISCORD_BOT_TOKEN must be in the environment!"),
          client_id: env::var("DISCORD_CLIENT_ID").expect("DISCORD_CLIENT_ID must be in the environment!"),
          client_secret: env::var("DISCORD_CLIENT_SECRET").expect("DISCORD_CLIENT_SECRET must be in the environment!"),
+         clip_directory: env::var("CLIP_DIRECTORY").expect("CLIP_DIRECTORY must be in the environment!"),
       })
 }

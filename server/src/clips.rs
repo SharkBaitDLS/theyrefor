@@ -1,3 +1,5 @@
+use std::fs;
+
 use futures::TryFutureExt;
 use reqwest::Client;
 use rocket::{
@@ -38,9 +40,37 @@ pub async fn get_clips(
                return Err((Status::InternalServerError, String::new()));
             }
          };
+
+         let guild_dir = String::from(&env.clip_directory) + "/" + &id.to_string();
+
+         // TODO: shared library with the bot?
+         let clip_names = fs::read_dir(guild_dir)
+            .map(|entries| {
+               entries
+                  .filter_map(|maybe_entry| {
+                     maybe_entry
+                        .map(|entry| {
+                           let path = entry.path();
+                           path
+                              .file_stem()
+                              .filter(|_| {
+                                 path.is_file() && path.extension().and_then(|ext| ext.to_str()) == Some("mp3")
+                              })
+                              .and_then(|stem| stem.to_str())
+                              .map(String::from)
+                        })
+                        .ok()
+                        .flatten()
+                  })
+                  .collect()
+            })
+            .unwrap_or_else(|err| {
+               error!("Could not list audio file directory: {}", err);
+               Vec::new()
+            });
+
          Ok(Json(GuildClips {
-            // TODO: read off of file system
-            clip_names: Vec::new(),
+            clip_names,
             guild_name: guild.name,
          }))
       }
