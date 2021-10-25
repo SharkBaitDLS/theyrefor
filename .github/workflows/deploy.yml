@@ -68,4 +68,4 @@ jobs:
       - name: Deploy
         run: cp -f release/theyrefor-server /home/soundboard/server/ && cp -r dist /home/soundboard/server && chmod +x /home/soundboard/server/theyrefor-server
       - name: Activate
-        run: sudo systemctl restart theyrefor
+        run: sudo /bin/systemctl restart theyrefor
