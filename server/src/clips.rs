@@ -1,4 +1,4 @@
-use std::fs;
+use std::{collections::BinaryHeap, fs};
 
 use futures::TryFutureExt;
 use reqwest::Client;
@@ -66,11 +66,11 @@ pub async fn get_clips(
             })
             .unwrap_or_else(|err| {
                error!("Could not list audio file directory: {}", err);
-               Vec::new()
+               BinaryHeap::new()
             });
 
          Ok(Json(GuildClips {
-            clip_names,
+            clip_names: clip_names.into_sorted_vec(),
             guild_name: guild.name,
          }))
       }
