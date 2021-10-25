@@ -44,7 +44,10 @@ impl Fairing for CORS {
 
 #[launch]
 fn rocket() -> _ {
-   rocket::build()
+   let rocket = rocket::build();
+   let figment = rocket.figment().clone();
+
+   rocket
       .mount(
          "/api",
          routes![
@@ -56,7 +59,14 @@ fn rocket() -> _ {
             user::get_user
          ],
       )
-      .mount("/", SPAServer::from(relative!("../ui/dist")))
+      .mount(
+         "/",
+         SPAServer::from(if figment.profile().as_str() == "release" {
+            relative!("dist")
+         } else {
+            relative!("../ui/dist")
+         }),
+      )
       .attach(CORS)
       .manage(reqwest::Client::new())
       .manage(Env {
