@@ -1,35 +1,38 @@
-use reqwasm::Error;
 use theyrefor_models::Guild;
-use yew::{Component, ComponentLink, Html, ShouldRender};
+use yew::{Component, ComponentLink, Html, Properties, ShouldRender};
 use yewtil::future::LinkFuture;
 
 use crate::http_client;
-
-async fn get_guilds() -> Result<Option<Vec<Guild>>, Error> {
-   http_client::get_with_auth("/api/guilds").await
-}
 
 pub enum Msg {
    Done(Vec<Guild>),
    Fail,
 }
 
+#[derive(Clone, Properties)]
+pub struct Props {
+   #[prop_or_default]
+   pub admin: bool,
+}
+
 pub struct Guilds {
    pub(super) guilds: Option<Result<Vec<Guild>, ()>>,
+   pub(super) is_admin: bool,
+   link: ComponentLink<Self>,
 }
 impl Component for Guilds {
    type Message = Msg;
 
-   type Properties = ();
+   type Properties = Props;
 
-   fn create(_props: Self::Properties, link: ComponentLink<Self>) -> Self {
-      link.send_future(async {
-         match get_guilds().await {
-            Ok(Some(guilds)) => Msg::Done(guilds),
-            _ => Msg::Fail,
-         }
-      });
-      Self { guilds: None }
+   fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+      let is_admin = props.admin;
+      link.send_future(get_guilds(is_admin));
+      Self {
+         guilds: None,
+         is_admin,
+         link,
+      }
    }
 
    fn update(&mut self, msg: Self::Message) -> ShouldRender {
@@ -40,11 +43,28 @@ impl Component for Guilds {
       true
    }
 
-   fn change(&mut self, _props: Self::Properties) -> ShouldRender {
-      false
+   fn change(&mut self, props: Self::Properties) -> ShouldRender {
+      if props.admin != self.is_admin {
+         self.is_admin = props.admin;
+         self.guilds = None;
+         self.link.send_future(get_guilds(self.is_admin));
+      }
+      true
    }
 
    fn view(&self) -> Html {
       self.render()
+   }
+}
+
+async fn get_guilds(is_admin: bool) -> Msg {
+   let data = if is_admin {
+      http_client::get_with_auth("/api/guilds/admin").await
+   } else {
+      http_client::get_with_auth("/api/guilds").await
+   };
+   match data {
+      Ok(Some(guilds)) => Msg::Done(guilds),
+      _ => Msg::Fail,
    }
 }

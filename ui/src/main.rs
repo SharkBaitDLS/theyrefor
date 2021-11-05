@@ -8,7 +8,7 @@ use yewtil::future::LinkFuture;
 
 mod http_client;
 mod pages;
-use pages::{Guilds, Home, NotFound, Soundboard};
+use pages::{Admin, Guilds, Home, NotFound, Soundboard};
 mod app_route;
 use app_route::{AppAnchor, AppRoute, AppRouter};
 
@@ -123,8 +123,11 @@ impl Model {
                   if user.is_some() {
                      html! {
                         <div class="navbar-start">
-                           <AppAnchor classes="navbar-item" route=AppRoute::Guilds>
+                           <AppAnchor classes="navbar-item" route=AppRoute::Clips>
                               { "Clips" }
+                           </AppAnchor>
+                           <AppAnchor classes="navbar-item" route=AppRoute::Servers>
+                              { "Manage Servers" }
                            </AppAnchor>
                         </div>
                      }
@@ -183,8 +186,14 @@ impl Model {
          AppRoute::Soundboard(id) => {
             html! { <Soundboard guild_id=id /> }
          }
-         AppRoute::Guilds => {
+         AppRoute::Clips => {
             html! { <Guilds /> }
+         }
+         AppRoute::Servers => {
+            html! { <Guilds admin=true /> }
+         }
+         AppRoute::Server(id) => {
+            html! { <Admin guild_id=id /> }
          }
          AppRoute::Home => {
             html! { <Home /> }

@@ -32,41 +32,89 @@ impl super::Guilds {
          Some(Ok(response)) => html! {
             <div class="tile is-ancestor is-vertical">
                <div class="tile is-child hero">
-                  <div class="hero-body container pb-0">
-                     <h1 class="title is-1">{ "Your Servers" }</h1>
-                     <h2 class="subtitle">{ "Select one to see the available clips" }</h2>
-                  </div>
-               </div>
-
-               <div class="tile is-mobile is-parent container is-flex is-flex-wrap-wrap">
                {
-                  for response.iter().map(|guild| {
+                  if self.is_admin {
                      html! {
-                        <AppAnchor classes="tile is-parent mx-3 my-3" route=AppRoute::Soundboard(guild.id.clone())>
-                        {
-                           match guild.icon.clone() {
-                              Some(icon) => html! {
-                                 <div class="tile is-child">
-                                    <figure class="is-flex-mobile is-justify-content-center">
-                                       <p class="image is-128x128 has-tooltip-arrow has-tooltip-top"
-                                          data-tooltip=guild.name.clone()>
-                                          <img class="is-rounded" src=icon />
-                                       </p>
-                                    </figure>
-                                 </div>
-                              },
-                              None => html! {
-                                 <div class="tile is-child is-flex is-align-items-center is-justify-content-center image is-128x128">
-                                    <div><b>{ guild.name.clone() }</b></div>
-                                 </div>
-                              }
-                           }
-                        }
-                        </AppAnchor>
+                        <div class="hero-body container pb-0">
+                           <h1 class="title is-1">{ "Servers You Manage" }</h1>
+                           <h2 class="subtitle">{ "Select one to upload or modify clips" }</h2>
+                        </div>
                      }
-                  })
+                  } else {
+                     html! {
+                        <div class="hero-body container pb-0">
+                           <h1 class="title is-1">{ "Your Servers" }</h1>
+                           <h2 class="subtitle">{ "Select one to see the available clips" }</h2>
+                        </div>
+                     }
+                  }
                }
                </div>
+               {
+                  if response.is_empty() {
+                     html! {
+                        <div class="tile is-child">
+                           <article class="message is-info">
+                              <div class="message-header">
+                                 <p>{ "No Servers Available" }</p>
+                              </div>
+                              {
+                                 if self.is_admin {
+                                    html! {
+                                       <div class="message-body">
+                                          { "You do not have permissions to modify clips in any of your servers." }
+                                       </div>
+                                    }
+                                 } else {
+                                    html! {
+                                       <div class="message-body">
+                                          { "You do not have access to any servers with the bot enabled." }
+                                       </div>
+                                    }
+                                 }
+                              }
+                           </article>
+                        </div>
+                     }
+                  } else {
+                     html! {
+                        <div class="tile is-mobile is-parent container is-flex is-flex-wrap-wrap">
+                        {
+                           for response.iter().map(|guild| {
+                              let route = if self.is_admin {
+                                 AppRoute::Server(guild.id.clone())
+                              } else {
+                                 AppRoute::Soundboard(guild.id.clone())
+                              };
+                              html! {
+                                 <AppAnchor classes="tile is-parent mx-3 my-3" route=route >
+                                 {
+                                    match guild.icon.clone() {
+                                       Some(icon) => html! {
+                                          <div class="tile is-child">
+                                             <figure class="is-flex-mobile is-justify-content-center">
+                                                <p class="image is-128x128 has-tooltip-arrow has-tooltip-top"
+                                                   data-tooltip=guild.name.clone()>
+                                                   <img class="is-rounded" src=icon />
+                                                </p>
+                                             </figure>
+                                          </div>
+                                       },
+                                       None => html! {
+                                          <div class="tile is-child is-flex is-align-items-center is-justify-content-center image is-128x128">
+                                             <div><b>{ guild.name.clone() }</b></div>
+                                          </div>
+                                       }
+                                    }
+                                 }
+                                 </AppAnchor>
+                              }
+                           })
+                        }
+                        </div>
+                     }
+                  }
+               }
             </div>
          },
       }

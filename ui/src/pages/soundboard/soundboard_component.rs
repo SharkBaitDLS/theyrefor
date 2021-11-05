@@ -1,17 +1,12 @@
-use reqwasm::Error;
 use theyrefor_models::GuildClips;
 use yew::{Component, ComponentLink, Html, Properties, ShouldRender};
 use yewtil::future::LinkFuture;
 
 use crate::http_client;
 
-#[derive(Clone, Debug, PartialEq, Properties)]
+#[derive(Clone, Properties)]
 pub struct Props {
    pub guild_id: String,
-}
-
-async fn get_clips(guild_id: String) -> Result<Option<GuildClips>, Error> {
-   http_client::get_with_auth(&format!("/api/clips/{}", guild_id)).await
 }
 
 pub enum Msg {
@@ -21,19 +16,21 @@ pub enum Msg {
 
 pub struct Soundboard {
    pub(super) data: Option<Result<GuildClips, ()>>,
+   link: ComponentLink<Self>,
+   guild_id: String,
 }
 impl Component for Soundboard {
    type Message = Msg;
    type Properties = Props;
 
    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-      link.send_future(async move {
-         match get_clips(props.guild_id).await {
-            Ok(Some(clips)) => Msg::Done(clips),
-            _ => Msg::Fail,
-         }
-      });
-      Self { data: None }
+      let guild_id = props.guild_id.clone();
+      link.send_future(get_clips(props.guild_id));
+      Self {
+         data: None,
+         link,
+         guild_id,
+      }
    }
 
    fn update(&mut self, msg: Self::Message) -> ShouldRender {
@@ -44,11 +41,23 @@ impl Component for Soundboard {
       true
    }
 
-   fn change(&mut self, _props: Self::Properties) -> ShouldRender {
-      false
+   fn change(&mut self, props: Self::Properties) -> ShouldRender {
+      if props.guild_id != self.guild_id {
+         self.link.send_future(get_clips(props.guild_id));
+         true
+      } else {
+         false
+      }
    }
 
    fn view(&self) -> Html {
       self.render()
+   }
+}
+
+async fn get_clips(guild_id: String) -> Msg {
+   match http_client::get_with_auth(&format!("/api/clips/{}", guild_id)).await {
+      Ok(Some(clips)) => Msg::Done(clips),
+      _ => Msg::Fail,
    }
 }

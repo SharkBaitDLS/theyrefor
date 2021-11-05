@@ -5,7 +5,11 @@ pub enum AppRoute {
    #[to = "/clips/{guild_id}"]
    Soundboard(String),
    #[to = "/clips"]
-   Guilds,
+   Clips,
+   #[to = "/servers/{guild_id}"]
+   Server(String),
+   #[to = "/servers"]
+   Servers,
    #[to = "/page-not-found"]
    NotFound(Permissive<String>),
    #[to = "/!"]
