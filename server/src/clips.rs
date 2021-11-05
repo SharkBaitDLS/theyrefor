@@ -22,9 +22,9 @@ struct Guild {
 
 #[get("/clips/<id>")]
 pub async fn get_clips(
-   id: u64, cookies: &CookieJar<'_>, client: &State<Client>, env: &State<Env>,
+   id: u64, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<Client>,
 ) -> Result<Json<GuildClips>, (Status, String)> {
-   match get_auth_token(cookies, client, env).await {
+   match get_auth_token(env, cookies, client).await {
       Err(redirect) => Err(redirect),
       Ok(_) => {
          let guild: Guild = match client
@@ -43,7 +43,6 @@ pub async fn get_clips(
 
          let guild_dir = String::from(&env.clip_directory) + "/" + &id.to_string();
 
-         // TODO: shared library with the bot?
          let clip_names = fs::read_dir(guild_dir)
             .map(|entries| {
                entries

@@ -72,9 +72,12 @@ fn build_auth_url(env: &State<Env>, cookies: &CookieJar<'_>) -> (Status, String)
       .collect();
 
    let mut session_cookie = Cookie::new(SESSION_COOKIE_NAME, token.clone());
-   // TODO: remove once not testing via localhost/HTTP
-   session_cookie.set_secure(false);
-   session_cookie.set_same_site(SameSite::Lax);
+   if env.is_release {
+      session_cookie.set_secure(true);
+   } else {
+      session_cookie.set_secure(false);
+      session_cookie.set_same_site(SameSite::Lax);
+   }
    cookies.add_private(session_cookie);
 
    let state = AuthState {
@@ -94,26 +97,30 @@ fn build_auth_url(env: &State<Env>, cookies: &CookieJar<'_>) -> (Status, String)
 }
 
 pub async fn get_auth_token(
-   cookies: &CookieJar<'_>, client: &State<Client>, env: &State<Env>,
+   env: &State<Env>, cookies: &CookieJar<'_>, client: &State<Client>,
 ) -> Result<String, (Status, String)> {
    match cookies
       .get_private(TOKEN_COOKIE_NAME)
       .and_then(|cookie| serde_json::from_str::<AuthToken>(cookie.value()).ok())
    {
       Some(auth) if auth.expiration < Instant::now() => {
-         refresh_token(auth, cookies, client, env).await.map(|auth| auth.token)
+         refresh_token(auth, env, cookies, client).await.map(|auth| auth.token)
       }
       Some(auth) => Ok(auth.token),
       None => Err(build_auth_url(env, cookies)),
    }
 }
 
-fn set_auth_token(token: AuthToken, cookies: &CookieJar<'_>) -> Result<AuthToken, serde_json::Error> {
+fn set_auth_token(token: AuthToken, env: &State<Env>, cookies: &CookieJar<'_>) -> Result<AuthToken, serde_json::Error> {
    serde_json::to_string(&token).map(|serialized| {
       let mut auth_cookie = Cookie::new(TOKEN_COOKIE_NAME, serialized);
-      // TODO: remove once not testing via localhost/HTTP
-      auth_cookie.set_secure(false);
-      auth_cookie.set_same_site(SameSite::Lax);
+      // Allow testing on localhost without HTTPS
+      if env.is_release {
+         auth_cookie.set_secure(true);
+      } else {
+         auth_cookie.set_secure(false);
+         auth_cookie.set_same_site(SameSite::Lax);
+      }
 
       cookies.add_private(auth_cookie);
       token
@@ -121,7 +128,7 @@ fn set_auth_token(token: AuthToken, cookies: &CookieJar<'_>) -> Result<AuthToken
 }
 
 async fn refresh_token(
-   token: AuthToken, cookies: &CookieJar<'_>, client: &State<Client>, env: &State<Env>,
+   token: AuthToken, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<Client>,
 ) -> Result<AuthToken, (Status, String)> {
    update_token(
       DiscordRefreshRequest {
@@ -130,6 +137,7 @@ async fn refresh_token(
          grant_type: "refresh_token",
          refresh_token: &token.refresh_token,
       },
+      env,
       cookies,
       client,
    )
@@ -138,7 +146,7 @@ async fn refresh_token(
 }
 
 async fn update_token<T: Serialize>(
-   request: T, cookies: &CookieJar<'_>, client: &State<Client>,
+   request: T, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<Client>,
 ) -> Result<AuthToken, Status> {
    let body = match serde_urlencoded::to_string(request) {
       Ok(encoded) => encoded,
@@ -181,6 +189,7 @@ async fn update_token<T: Serialize>(
                expiration: Instant::now() + Duration::from_secs(token.expires_in),
                refresh_token: token.refresh_token,
             },
+            env,
             cookies,
          )
          .map_err(|err| {
@@ -192,8 +201,8 @@ async fn update_token<T: Serialize>(
 }
 
 #[get("/login")]
-pub async fn login(cookies: &CookieJar<'_>, client: &State<Client>, env: &State<Env>) -> Result<(), (Status, String)> {
-   get_auth_token(cookies, client, env).await.map(|_| ())
+pub async fn login(env: &State<Env>, cookies: &CookieJar<'_>, client: &State<Client>) -> Result<(), (Status, String)> {
+   get_auth_token(env, cookies, client).await.map(|_| ())
 }
 
 #[post("/logout")]
@@ -203,7 +212,7 @@ pub fn logout(cookies: &CookieJar<'_>) {
 
 #[get("/auth?<code>&<state>")]
 pub async fn authorize(
-   code: &str, state: &str, cookies: &CookieJar<'_>, client: &State<Client>, env: &State<Env>,
+   code: &str, state: &str, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<Client>,
 ) -> Result<Redirect, Status> {
    let state: AuthState = match base64::decode(state)
       .ok()
@@ -230,6 +239,7 @@ pub async fn authorize(
          code,
          redirect_uri: &format!("{}/api/auth", env.base_uri),
       },
+      env,
       cookies,
       client,
    )

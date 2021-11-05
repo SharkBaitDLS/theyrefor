@@ -23,6 +23,7 @@ pub struct Env {
    client_id: String,
    client_secret: String,
    clip_directory: String,
+   is_release: bool,
 }
 
 pub struct CORS;
@@ -46,7 +47,7 @@ impl Fairing for CORS {
 #[launch]
 fn rocket() -> _ {
    let rocket = rocket::build();
-   let figment = rocket.figment().clone();
+   let is_release = rocket.figment().profile() == "release";
 
    rocket
       .mount(
@@ -56,18 +57,12 @@ fn rocket() -> _ {
             auth::login,
             auth::logout,
             clips::get_clips,
+            guilds::get_admin_guilds,
             guilds::get_guilds,
             user::get_user
          ],
       )
-      .mount(
-         "/",
-         SPAServer::from(if figment.profile().as_str() == "release" {
-            "dist"
-         } else {
-            "../ui/dist"
-         }),
-      )
+      .mount("/", SPAServer::from(if is_release { "dist" } else { "../ui/dist" }))
       .attach(CORS)
       .manage(reqwest::Client::new())
       .manage(Env {
@@ -76,5 +71,6 @@ fn rocket() -> _ {
          client_id: env::var("DISCORD_CLIENT_ID").expect("DISCORD_CLIENT_ID must be in the environment!"),
          client_secret: env::var("DISCORD_CLIENT_SECRET").expect("DISCORD_CLIENT_SECRET must be in the environment!"),
          clip_directory: env::var("CLIP_DIRECTORY").expect("CLIP_DIRECTORY must be in the environment!"),
+         is_release,
       })
 }
