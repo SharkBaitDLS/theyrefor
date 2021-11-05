@@ -3,8 +3,9 @@ use std::{
    time::{Duration, Instant},
 };
 
+use futures::{FutureExt, TryFutureExt};
 use rand::{distributions::Alphanumeric, Rng};
-use reqwest::{Client, RequestBuilder, StatusCode};
+use reqwest::{Client, RequestBuilder};
 use rocket::{
    http::{Cookie, CookieJar, SameSite, Status},
    response::Redirect,
@@ -13,7 +14,7 @@ use rocket::{
 use serde::{Deserialize, Serialize};
 use theyrefor_models::AuthState;
 
-use crate::Env;
+use crate::{util, Env};
 
 const TOKEN_COOKIE_NAME: &str = "token";
 const SESSION_COOKIE_NAME: &str = "session";
@@ -72,11 +73,11 @@ fn build_auth_url(env: &State<Env>, cookies: &CookieJar<'_>) -> (Status, String)
       .collect();
 
    let mut session_cookie = Cookie::new(SESSION_COOKIE_NAME, token.clone());
+   // This has to be lax because we retrieve it when Discord redirects back to us for auth
+   session_cookie.set_same_site(SameSite::Lax);
+   session_cookie.set_path("/api/auth");
    if env.is_release {
       session_cookie.set_secure(true);
-   } else {
-      session_cookie.set_secure(false);
-      session_cookie.set_same_site(SameSite::Lax);
    }
    cookies.add_private(session_cookie);
 
@@ -114,14 +115,10 @@ pub async fn get_auth_token(
 fn set_auth_token(token: AuthToken, env: &State<Env>, cookies: &CookieJar<'_>) -> Result<AuthToken, serde_json::Error> {
    serde_json::to_string(&token).map(|serialized| {
       let mut auth_cookie = Cookie::new(TOKEN_COOKIE_NAME, serialized);
-      // Allow testing on localhost without HTTPS
+      auth_cookie.set_path("/api");
       if env.is_release {
          auth_cookie.set_secure(true);
-      } else {
-         auth_cookie.set_secure(false);
-         auth_cookie.set_same_site(SameSite::Lax);
       }
-
       cookies.add_private(auth_cookie);
       token
    })
@@ -148,56 +145,33 @@ async fn refresh_token(
 async fn update_token<T: Serialize>(
    request: T, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<Client>,
 ) -> Result<AuthToken, Status> {
-   let body = match serde_urlencoded::to_string(request) {
-      Ok(encoded) => encoded,
-      Err(_) => {
-         error!("Malformed body could not be encoded");
-         return Err(Status::InternalServerError);
-      }
-   };
+   let body = serde_urlencoded::to_string(request).map_err(|_| {
+      error!("Malformed body could not be encoded");
+      Status::InternalServerError
+   })?;
 
-   let result = client
+   let token: DiscordAuthResponse = client
       .post("https://discord.com/api/v8/oauth2/token")
       .header(reqwest::header::CONTENT_TYPE, "application/x-www-form-urlencoded")
       .body(body)
       .send()
-      .await;
+      .then(util::deserialize)
+      .map_err(|(status, _)| status)
+      .await?;
 
-   match result {
-      Err(err) => {
-         error!("Failed to send auth request: {:?}", err);
-         Err(Status::InternalServerError)
-      }
-      Ok(response) => {
-         let token: DiscordAuthResponse = if response.status() == StatusCode::OK {
-            match response.json().await {
-               Ok(token) => token,
-               Err(err) => {
-                  error!("Failed to decode auth request: {:?}", err);
-                  return Err(Status::InternalServerError);
-               }
-            }
-         } else {
-            let status = response.status();
-            error!("Auth request failed: {:?}", response.text().await);
-            return Err(Status::new(status.into()));
-         };
-
-         set_auth_token(
-            AuthToken {
-               token: token.access_token,
-               expiration: Instant::now() + Duration::from_secs(token.expires_in),
-               refresh_token: token.refresh_token,
-            },
-            env,
-            cookies,
-         )
-         .map_err(|err| {
-            error!("{:?}", err);
-            Status::InternalServerError
-         })
-      }
-   }
+   set_auth_token(
+      AuthToken {
+         token: token.access_token,
+         expiration: Instant::now() + Duration::from_secs(token.expires_in),
+         refresh_token: token.refresh_token,
+      },
+      env,
+      cookies,
+   )
+   .map_err(|err| {
+      error!("Could not serialize auth token: {:?}", err);
+      Status::InternalServerError
+   })
 }
 
 #[get("/login")]
@@ -207,7 +181,9 @@ pub async fn login(env: &State<Env>, cookies: &CookieJar<'_>, client: &State<Cli
 
 #[post("/logout")]
 pub fn logout(cookies: &CookieJar<'_>) {
-   cookies.remove_private(Cookie::named(TOKEN_COOKIE_NAME));
+   let mut token_cookie = Cookie::named(TOKEN_COOKIE_NAME);
+   token_cookie.set_path("/api");
+   cookies.remove_private(token_cookie);
 }
 
 #[get("/auth?<code>&<state>")]

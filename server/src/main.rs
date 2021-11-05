@@ -14,6 +14,7 @@ mod clips;
 mod guilds;
 mod spa_server;
 mod user;
+mod util;
 
 use crate::spa_server::SPAServer;
 

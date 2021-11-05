@@ -1,6 +1,6 @@
 use std::{collections::BinaryHeap, fs};
 
-use futures::TryFutureExt;
+use futures::{FutureExt, TryFutureExt};
 use reqwest::Client;
 use rocket::{
    http::{CookieJar, Status},
@@ -10,37 +10,32 @@ use rocket::{
 use serde::Deserialize;
 use theyrefor_models::GuildClips;
 
-use crate::{
-   auth::{get_auth_token, DiscordBotAuthBuilder},
-   Env,
-};
+use crate::{auth::get_auth_token, util, Env};
 
 #[derive(Deserialize)]
 struct Guild {
+   id: String,
    name: String,
 }
 
 #[get("/clips/<id>")]
 pub async fn get_clips(
-   id: u64, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<Client>,
+   id: String, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<Client>,
 ) -> Result<Json<GuildClips>, (Status, String)> {
-   match get_auth_token(env, cookies, client).await {
-      Err(redirect) => Err(redirect),
-      Ok(_) => {
-         let guild: Guild = match client
-            .get(format!("https://discord.com/api/v8/guilds/{}", id))
-            .bot_auth(&env.bot_token)
+   get_auth_token(env, cookies, client)
+      .and_then(|token| {
+         client
+            .get("https://discord.com/api/v8/users/@me/guilds")
+            .bearer_auth(token)
             .send()
-            .and_then(|body| body.json())
-            .await
-         {
-            Ok(data) => data,
-            Err(err) => {
-               error!("{:?}", err);
-               return Err((Status::InternalServerError, String::new()));
-            }
-         };
-
+            .then(util::deserialize::<Vec<Guild>>)
+      })
+      .await
+      .and_then(|guilds| {
+         let guild = guilds
+            .iter()
+            .find(|guild| guild.id == id)
+            .ok_or((Status::Forbidden, String::new()))?;
          let guild_dir = String::from(&env.clip_directory) + "/" + &id.to_string();
 
          let clip_names = fs::read_dir(guild_dir)
@@ -70,8 +65,7 @@ pub async fn get_clips(
 
          Ok(Json(GuildClips {
             clip_names: clip_names.into_sorted_vec(),
-            guild_name: guild.name,
+            guild_name: guild.name.clone(),
          }))
-      }
-   }
+      })
 }
