@@ -5,7 +5,8 @@ pub struct Props {
    pub guild_id: String,
 }
 
-pub struct Admin;
+pub struct Admin {}
+
 impl Component for Admin {
    type Message = ();
 

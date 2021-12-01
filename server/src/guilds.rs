@@ -21,7 +21,7 @@ use crate::{
 };
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
-pub struct DiscordGuild {
+struct DiscordGuild {
    pub name: String,
    pub id: String,
    pub icon: Option<String>,

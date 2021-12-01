@@ -126,9 +126,9 @@ impl Model {
                            <AppAnchor classes="navbar-item" route=AppRoute::Clips>
                               { "Clips" }
                            </AppAnchor>
-                           <AppAnchor classes="navbar-item" route=AppRoute::Servers>
-                              { "Manage Servers" }
-                           </AppAnchor>
+                           // <AppAnchor classes="navbar-item" route=AppRoute::Servers>
+                           //    { "Manage Servers" }
+                           // </AppAnchor>
                         </div>
                      }
                   } else {
