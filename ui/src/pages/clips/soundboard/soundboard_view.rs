@@ -32,6 +32,28 @@ impl super::Soundboard {
                <section class="section is-size-3 has-text-centered">
                   { format!("Clips for {}", response.guild_name) }
                </section>
+               {
+                  if self.playback_error.is_some() {
+                     html! {
+                        <div class="tile is-ancestor columns is-centered mt-2 px-4">
+                           <div class="tile is-4 is-parent">
+                              <div class="tile is-child">
+                                 <article class="message is-danger">
+                                    <div class="message-header">
+                                       <p>{ "Error" }</p>
+                                    </div>
+                                    <div class="message-body">
+                                       { "Could not play clip. Make sure you are in a voice channel in this server." }
+                                    </div>
+                                 </article>
+                              </div>
+                           </div>
+                        </div>
+                     }
+                  } else {
+                     html! {}
+                  }
+               }
                <div class="mx-4">
                   <div class="tracklist container mt-2 mb-4">
                      {
@@ -41,7 +63,7 @@ impl super::Soundboard {
                                  <div class="box container is-flex is-align-items-center p-2">
                                     <div class="tracklist-text mr-auto">{ name }</div>
                                     <div class="ml-auto">
-                                       <button class="button is-link">
+                                       <button class="button is-link" onclick=&self.playback_callback(name.to_string())>
                                           {"Play"}
                                        </button>
                                     </div>

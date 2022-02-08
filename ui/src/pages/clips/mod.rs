@@ -9,6 +9,9 @@ use crate::http_client;
 
 pub enum Msg {
    Done(GuildClips),
+   Play(String),
+   PlaybackSuccess,
+   PlaybackError,
    Fail,
 }
 

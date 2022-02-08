@@ -17,7 +17,20 @@ where
 {
    match Request::get(uri).send().await {
       Ok(response) if response.status() == StatusCode::UNAUTHORIZED => update_redirect(response).await,
-      Ok(response) => response.json().await,
+      Ok(response) if response.status() == StatusCode::OK => response.json().await,
+      Ok(response) => Err(Error::Other(anyhow::anyhow!(response.status()))),
+      Err(err) => {
+         error!("{:?}", err);
+         Err(err)
+      }
+   }
+}
+
+pub async fn post_with_auth(uri: &str) -> Result<Option<()>, Error> {
+   match Request::post(uri).send().await {
+      Ok(response) if response.status() == StatusCode::UNAUTHORIZED => update_redirect(response).await,
+      Ok(response) if response.status() == StatusCode::OK => Ok(Some(())),
+      Ok(response) => Err(Error::Other(anyhow::anyhow!(response.status()))),
       Err(err) => {
          error!("{:?}", err);
          Err(err)

@@ -9,7 +9,7 @@ use theyrefor_models::User;
 
 use crate::{auth::get_auth_token, util, Env};
 
-pub async fn get_current_user_id(token: &str, client: &State<Client>) -> Result<String, (Status, String)> {
+pub async fn get_current_user_id(token: String, client: &State<Client>) -> Result<String, (Status, String)> {
    client
       .get("https://discord.com/api/v8/users/@me")
       .bearer_auth(token)

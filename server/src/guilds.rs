@@ -82,7 +82,7 @@ pub async fn get_admin_guilds(
 ) -> Result<Json<Vec<Guild>>, (Status, String)> {
    let token = get_auth_token(env, cookies, client).await?;
    let guilds = get_mutual_guilds(&token, env, client).await?;
-   let user_id = user::get_current_user_id(&token, client).await?;
+   let user_id = user::get_current_user_id(token, client).await?;
 
    // TODO: break this out into helper functions
    let admin_guilds = stream::iter(guilds)

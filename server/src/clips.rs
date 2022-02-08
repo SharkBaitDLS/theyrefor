@@ -10,12 +10,30 @@ use rocket::{
 use serde::Deserialize;
 use theyrefor_models::GuildClips;
 
-use crate::{auth::get_auth_token, util, Env};
+use crate::{auth::get_auth_token, user::get_current_user_id, util, Env};
 
 #[derive(Deserialize)]
 struct Guild {
    id: String,
    name: String,
+}
+
+#[post("/clips/<guild_id>/<name>")]
+pub async fn play_clip(
+   guild_id: String, name: String, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<Client>,
+) -> Result<(), (Status, String)> {
+   get_auth_token(env, cookies, client)
+      .and_then(|token| get_current_user_id(token, client))
+      .and_then(|user_id| {
+         client
+            .post(format!(
+               "http://my-man.imgoodproductions.org:8000/play/{}/{}/{}",
+               guild_id, user_id, name
+            ))
+            .send()
+            .then(util::check_ok)
+      })
+      .await
 }
 
 #[get("/clips/<id>")]

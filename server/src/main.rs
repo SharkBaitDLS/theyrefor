@@ -58,6 +58,7 @@ fn rocket() -> _ {
             auth::login,
             auth::logout,
             clips::get_clips,
+            clips::play_clip,
             guilds::get_admin_guilds,
             guilds::get_guilds,
             user::get_user
