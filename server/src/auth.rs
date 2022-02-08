@@ -5,7 +5,7 @@ use std::{
 
 use futures::{FutureExt, TryFutureExt};
 use rand::{distributions::Alphanumeric, Rng};
-use reqwest::{Client, RequestBuilder};
+use reqwest_middleware::{ClientWithMiddleware, RequestBuilder};
 use rocket::{
    http::{Cookie, CookieJar, SameSite, Status},
    response::Redirect,
@@ -98,7 +98,7 @@ fn build_auth_url(env: &State<Env>, cookies: &CookieJar<'_>) -> (Status, String)
 }
 
 pub async fn get_auth_token(
-   env: &State<Env>, cookies: &CookieJar<'_>, client: &State<Client>,
+   env: &State<Env>, cookies: &CookieJar<'_>, client: &State<ClientWithMiddleware>,
 ) -> Result<String, (Status, String)> {
    match cookies
       .get_private(TOKEN_COOKIE_NAME)
@@ -125,7 +125,7 @@ fn set_auth_token(token: AuthToken, env: &State<Env>, cookies: &CookieJar<'_>) -
 }
 
 async fn refresh_token(
-   token: AuthToken, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<Client>,
+   token: AuthToken, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<ClientWithMiddleware>,
 ) -> Result<AuthToken, (Status, String)> {
    update_token(
       DiscordRefreshRequest {
@@ -143,7 +143,7 @@ async fn refresh_token(
 }
 
 async fn update_token<T: Serialize>(
-   request: T, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<Client>,
+   request: T, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<ClientWithMiddleware>,
 ) -> Result<AuthToken, Status> {
    let body = serde_urlencoded::to_string(request).map_err(|_| {
       error!("Malformed body could not be encoded");
@@ -175,7 +175,9 @@ async fn update_token<T: Serialize>(
 }
 
 #[get("/login")]
-pub async fn login(env: &State<Env>, cookies: &CookieJar<'_>, client: &State<Client>) -> Result<(), (Status, String)> {
+pub async fn login(
+   env: &State<Env>, cookies: &CookieJar<'_>, client: &State<ClientWithMiddleware>,
+) -> Result<(), (Status, String)> {
    get_auth_token(env, cookies, client).await.map(|_| ())
 }
 
@@ -188,7 +190,7 @@ pub fn logout(cookies: &CookieJar<'_>) {
 
 #[get("/auth?<code>&<state>")]
 pub async fn authorize(
-   code: &str, state: &str, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<Client>,
+   code: &str, state: &str, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<ClientWithMiddleware>,
 ) -> Result<Redirect, Status> {
    let state: AuthState = match base64::decode(state)
       .ok()

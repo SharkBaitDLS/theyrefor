@@ -3,6 +3,8 @@ extern crate rocket;
 
 use std::env;
 
+use http_cache_reqwest::{CACacheManager, Cache, CacheMode, HttpCache};
+use reqwest_middleware::ClientBuilder;
 use rocket::{
    fairing::{Fairing, Info, Kind},
    http::Header,
@@ -49,6 +51,13 @@ impl Fairing for CORS {
 fn rocket() -> _ {
    let rocket = rocket::build();
    let is_release = rocket.figment().profile() == "release";
+   let client = ClientBuilder::new(reqwest::Client::new())
+      .with(Cache(HttpCache {
+         mode: CacheMode::Default,
+         manager: CACacheManager::default(),
+         options: None,
+      }))
+      .build();
 
    rocket
       .mount(
@@ -66,7 +75,7 @@ fn rocket() -> _ {
       )
       .mount("/", SPAServer::from(if is_release { "dist" } else { "../ui/dist" }))
       .attach(CORS)
-      .manage(reqwest::Client::new())
+      .manage(client)
       .manage(Env {
          base_uri: env::var("BASE_URI").expect("BASE_URI must be in the environment!"),
          bot_token: env::var("DISCORD_BOT_TOKEN").expect("DISCORD_BOT_TOKEN must be in the environment!"),

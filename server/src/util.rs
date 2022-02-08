@@ -1,6 +1,7 @@
 use std::fmt::Debug;
 
-use reqwest::{Error, Response, StatusCode};
+use reqwest::{Response, StatusCode};
+use reqwest_middleware::Error;
 use rocket::{http::Status, serde::DeserializeOwned};
 
 use crate::util;

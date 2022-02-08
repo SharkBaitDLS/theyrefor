@@ -1,7 +1,7 @@
 use std::{collections::BinaryHeap, fs};
 
 use futures::{FutureExt, TryFutureExt};
-use reqwest::Client;
+use reqwest_middleware::ClientWithMiddleware;
 use rocket::{
    http::{CookieJar, Status},
    serde::json::Json,
@@ -20,7 +20,7 @@ struct Guild {
 
 #[post("/clips/<guild_id>/<name>")]
 pub async fn play_clip(
-   guild_id: String, name: String, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<Client>,
+   guild_id: String, name: String, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<ClientWithMiddleware>,
 ) -> Result<(), (Status, String)> {
    get_auth_token(env, cookies, client)
       .and_then(|token| get_current_user_id(token, client))
@@ -38,7 +38,7 @@ pub async fn play_clip(
 
 #[get("/clips/<id>")]
 pub async fn get_clips(
-   id: String, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<Client>,
+   id: String, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<ClientWithMiddleware>,
 ) -> Result<Json<GuildClips>, (Status, String)> {
    get_auth_token(env, cookies, client)
       .and_then(|token| {

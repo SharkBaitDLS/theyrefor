@@ -6,7 +6,7 @@ use std::{
 
 use futures::{stream, FutureExt, StreamExt, TryFutureExt};
 use log::error;
-use reqwest::Client;
+use reqwest_middleware::ClientWithMiddleware;
 use rocket::{
    http::{CookieJar, Status},
    serde::json::Json,
@@ -47,7 +47,7 @@ impl From<DiscordGuild> for Guild {
 }
 
 async fn get_mutual_guilds(
-   token: &str, env: &State<Env>, client: &State<Client>,
+   token: &str, env: &State<Env>, client: &State<ClientWithMiddleware>,
 ) -> Result<Vec<DiscordGuild>, (Status, String)> {
    let guilds: Vec<DiscordGuild> = client
       .get("https://discord.com/api/v8/users/@me/guilds")
@@ -68,7 +68,7 @@ async fn get_mutual_guilds(
 
 #[get("/guilds")]
 pub async fn get_guilds(
-   env: &State<Env>, cookies: &CookieJar<'_>, client: &State<Client>,
+   env: &State<Env>, cookies: &CookieJar<'_>, client: &State<ClientWithMiddleware>,
 ) -> Result<Json<Vec<Guild>>, (Status, String)> {
    get_auth_token(env, cookies, client)
       .and_then(|token| async move { get_mutual_guilds(&token, env, client).await })
@@ -78,7 +78,7 @@ pub async fn get_guilds(
 
 #[get("/guilds/admin")]
 pub async fn get_admin_guilds(
-   env: &State<Env>, cookies: &CookieJar<'_>, client: &State<Client>,
+   env: &State<Env>, cookies: &CookieJar<'_>, client: &State<ClientWithMiddleware>,
 ) -> Result<Json<Vec<Guild>>, (Status, String)> {
    let token = get_auth_token(env, cookies, client).await?;
    let guilds = get_mutual_guilds(&token, env, client).await?;
