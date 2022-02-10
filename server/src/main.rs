@@ -18,6 +18,7 @@ use spa_server::SPAServer;
 
 pub struct Env {
    base_uri: String,
+   bot_uri: String,
    bot_token: String,
    client_id: String,
    client_secret: String,
@@ -57,6 +58,7 @@ fn rocket() -> _ {
       .manage(DiscordClient::new(client))
       .manage(Env {
          base_uri: env::var("BASE_URI").expect("BASE_URI must be in the environment!"),
+         bot_uri: env::var("BOT_URI").expect("BOT_URI must be in the environment!"),
          bot_token: env::var("DISCORD_BOT_TOKEN").expect("DISCORD_BOT_TOKEN must be in the environment!"),
          client_id: env::var("DISCORD_CLIENT_ID").expect("DISCORD_CLIENT_ID must be in the environment!"),
          client_secret: env::var("DISCORD_CLIENT_SECRET").expect("DISCORD_CLIENT_SECRET must be in the environment!"),

@@ -85,13 +85,10 @@ impl DiscordClient {
          .await
    }
 
-   pub async fn play_clip(&self, guild_id: String, user_id: String, name: String) -> ApiResponse<()> {
+   pub async fn play_clip(&self, bot_uri: &str, guild_id: String, user_id: String, name: String) -> ApiResponse<()> {
       self
          .client
-         .post(format!(
-            "http://my-man.imgoodproductions.org:8000/play/{}/{}/{}",
-            guild_id, user_id, name
-         ))
+         .post(format!("{}/play/{}/{}/{}", bot_uri, guild_id, user_id, name))
          .send()
          .then(util::check_ok)
          .await

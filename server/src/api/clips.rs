@@ -16,7 +16,7 @@ pub async fn play_clip(
 ) -> ApiResponse<()> {
    auth::get_auth_token(env, cookies, client)
       .and_then(|token| user::get_current_user_id(token, client))
-      .and_then(|user_id| client.play_clip(guild_id, user_id, name))
+      .and_then(|user_id| client.play_clip(&env.bot_uri, guild_id, user_id, name))
       .await
 }
 
