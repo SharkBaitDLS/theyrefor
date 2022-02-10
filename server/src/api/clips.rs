@@ -1,60 +1,38 @@
-use std::{collections::BinaryHeap, fs};
-
-use futures::{FutureExt, TryFutureExt};
-use reqwest_middleware::ClientWithMiddleware;
+use futures::TryFutureExt;
 use rocket::{
    http::{CookieJar, Status},
    serde::json::Json,
    State,
 };
-use serde::Deserialize;
+use std::{collections::BinaryHeap, fs};
+
+use super::{auth, user, ApiResponse};
+use crate::{discord_client::DiscordClient, Env};
 use theyrefor_models::GuildClips;
-
-use crate::{auth::get_auth_token, user::get_current_user_id, util, Env};
-
-#[derive(Deserialize)]
-struct Guild {
-   id: String,
-   name: String,
-}
 
 #[post("/clips/<guild_id>/<name>")]
 pub async fn play_clip(
-   guild_id: String, name: String, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<ClientWithMiddleware>,
-) -> Result<(), (Status, String)> {
-   get_auth_token(env, cookies, client)
-      .and_then(|token| get_current_user_id(token, client))
-      .and_then(|user_id| {
-         client
-            .post(format!(
-               "http://my-man.imgoodproductions.org:8000/play/{}/{}/{}",
-               guild_id, user_id, name
-            ))
-            .send()
-            .then(util::check_ok)
-      })
+   guild_id: String, name: String, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<DiscordClient>,
+) -> ApiResponse<()> {
+   auth::get_auth_token(env, cookies, client)
+      .and_then(|token| user::get_current_user_id(token, client))
+      .and_then(|user_id| client.play_clip(guild_id, user_id, name))
       .await
 }
 
 #[get("/clips/<id>")]
 pub async fn get_clips(
-   id: String, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<ClientWithMiddleware>,
-) -> Result<Json<GuildClips>, (Status, String)> {
-   get_auth_token(env, cookies, client)
-      .and_then(|token| {
-         client
-            .get("https://discord.com/api/v8/users/@me/guilds")
-            .bearer_auth(token)
-            .send()
-            .then(util::deserialize::<Vec<Guild>>)
-      })
+   id: String, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<DiscordClient>,
+) -> ApiResponse<Json<GuildClips>> {
+   auth::get_auth_token(env, cookies, client)
+      .and_then(|token| client.get_user_guilds(token))
       .await
       .and_then(|guilds| {
          let guild = guilds
             .iter()
             .find(|guild| guild.id == id)
             .ok_or((Status::Forbidden, String::new()))?;
-         let guild_dir = String::from(&env.clip_directory) + "/" + &id.to_string();
+         let guild_dir = String::from(&env.clip_directory) + "/" + &id;
 
          let clip_names = fs::read_dir(guild_dir)
             .map(|entries| {

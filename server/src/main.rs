@@ -1,24 +1,20 @@
 #[macro_use]
 extern crate rocket;
 
-use std::env;
+mod api;
+mod discord_client;
+mod fairing;
+mod middleware;
+mod spa_server;
 
 use http_cache_reqwest::{CACacheManager, Cache, CacheMode, HttpCache};
+use reqwest::Client;
 use reqwest_middleware::ClientBuilder;
-use rocket::{
-   fairing::{Fairing, Info, Kind},
-   http::Header,
-   Request, Response,
-};
+use std::env;
 
-mod auth;
-mod clips;
-mod guilds;
-mod spa_server;
-mod user;
-mod util;
-
-use crate::spa_server::SPAServer;
+use discord_client::DiscordClient;
+use middleware::UserAgentMiddleware;
+use spa_server::SPAServer;
 
 pub struct Env {
    base_uri: String,
@@ -29,29 +25,12 @@ pub struct Env {
    is_release: bool,
 }
 
-pub struct CORS;
-
-#[async_trait::async_trait]
-impl Fairing for CORS {
-   fn info(&self) -> Info {
-      Info {
-         name: "Add CORS headers to responses",
-         kind: Kind::Response,
-      }
-   }
-
-   async fn on_response<'r>(&self, request: &'r Request<'_>, response: &mut Response<'r>) {
-      let env = request.rocket().state::<Env>().unwrap();
-      response.set_header(Header::new("Access-Control-Allow-Origin", &env.base_uri));
-      response.set_header(Header::new("Access-Control-Allow-Methods", "POST, GET"));
-   }
-}
-
 #[launch]
 fn rocket() -> _ {
    let rocket = rocket::build();
    let is_release = rocket.figment().profile() == "release";
-   let client = ClientBuilder::new(reqwest::Client::new())
+   let client = ClientBuilder::new(Client::new())
+      .with(UserAgentMiddleware)
       .with(Cache(HttpCache {
          mode: CacheMode::Default,
          manager: CACacheManager::default(),
@@ -63,19 +42,19 @@ fn rocket() -> _ {
       .mount(
          "/api",
          routes![
-            auth::authorize,
-            auth::login,
-            auth::logout,
-            clips::get_clips,
-            clips::play_clip,
-            guilds::get_admin_guilds,
-            guilds::get_guilds,
-            user::get_user
+            api::auth::authorize,
+            api::auth::login,
+            api::auth::logout,
+            api::clips::get_clips,
+            api::clips::play_clip,
+            api::guilds::get_admin_guilds,
+            api::guilds::get_guilds,
+            api::user::get_user
          ],
       )
       .mount("/", SPAServer::from(if is_release { "dist" } else { "../ui/dist" }))
-      .attach(CORS)
-      .manage(client)
+      .attach(fairing::Cors)
+      .manage(DiscordClient::new(client))
       .manage(Env {
          base_uri: env::var("BASE_URI").expect("BASE_URI must be in the environment!"),
          bot_token: env::var("DISCORD_BOT_TOKEN").expect("DISCORD_BOT_TOKEN must be in the environment!"),

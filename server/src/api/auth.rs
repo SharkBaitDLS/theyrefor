@@ -1,20 +1,15 @@
-use std::{
-   fmt,
-   time::{Duration, Instant},
-};
-
-use futures::{FutureExt, TryFutureExt};
 use rand::{distributions::Alphanumeric, Rng};
-use reqwest_middleware::{ClientWithMiddleware, RequestBuilder};
 use rocket::{
    http::{Cookie, CookieJar, SameSite, Status},
    response::Redirect,
    State,
 };
 use serde::{Deserialize, Serialize};
-use theyrefor_models::AuthState;
+use std::time::{Duration, Instant};
 
-use crate::{util, Env};
+use super::{ApiError, ApiResponse};
+use crate::{discord_client::DiscordClient, Env};
+use theyrefor_models::AuthState;
 
 const TOKEN_COOKIE_NAME: &str = "token";
 const SESSION_COOKIE_NAME: &str = "session";
@@ -44,28 +39,7 @@ struct DiscordRefreshRequest<'a> {
    refresh_token: &'a str,
 }
 
-#[derive(Deserialize)]
-struct DiscordAuthResponse {
-   access_token: String,
-   expires_in: u64,
-   refresh_token: String,
-}
-
-pub(crate) trait DiscordBotAuthBuilder {
-   fn bot_auth<T: fmt::Display>(self, token: T) -> RequestBuilder;
-}
-
-impl DiscordBotAuthBuilder for RequestBuilder {
-   fn bot_auth<T>(self, token: T) -> RequestBuilder
-   where
-      T: fmt::Display,
-   {
-      let header_value = format!("Bot {}", token);
-      self.header(reqwest::header::AUTHORIZATION, header_value)
-   }
-}
-
-fn build_auth_url(env: &State<Env>, cookies: &CookieJar<'_>) -> (Status, String) {
+fn build_auth_url(env: &State<Env>, cookies: &CookieJar<'_>) -> ApiError {
    let token: String = rand::thread_rng()
       .sample_iter(&Alphanumeric)
       .take(30)
@@ -98,8 +72,8 @@ fn build_auth_url(env: &State<Env>, cookies: &CookieJar<'_>) -> (Status, String)
 }
 
 pub async fn get_auth_token(
-   env: &State<Env>, cookies: &CookieJar<'_>, client: &State<ClientWithMiddleware>,
-) -> Result<String, (Status, String)> {
+   env: &State<Env>, cookies: &CookieJar<'_>, client: &State<DiscordClient>,
+) -> ApiResponse<String> {
    match cookies
       .get_private(TOKEN_COOKIE_NAME)
       .and_then(|cookie| serde_json::from_str::<AuthToken>(cookie.value()).ok())
@@ -125,8 +99,8 @@ fn set_auth_token(token: AuthToken, env: &State<Env>, cookies: &CookieJar<'_>) -
 }
 
 async fn refresh_token(
-   token: AuthToken, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<ClientWithMiddleware>,
-) -> Result<AuthToken, (Status, String)> {
+   token: AuthToken, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<DiscordClient>,
+) -> ApiResponse<AuthToken> {
    update_token(
       DiscordRefreshRequest {
          client_id: &env.client_id,
@@ -143,21 +117,9 @@ async fn refresh_token(
 }
 
 async fn update_token<T: Serialize>(
-   request: T, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<ClientWithMiddleware>,
+   request: T, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<DiscordClient>,
 ) -> Result<AuthToken, Status> {
-   let body = serde_urlencoded::to_string(request).map_err(|_| {
-      error!("Malformed body could not be encoded");
-      Status::InternalServerError
-   })?;
-
-   let token: DiscordAuthResponse = client
-      .post("https://discord.com/api/v8/oauth2/token")
-      .header(reqwest::header::CONTENT_TYPE, "application/x-www-form-urlencoded")
-      .body(body)
-      .send()
-      .then(util::deserialize)
-      .map_err(|(status, _)| status)
-      .await?;
+   let token = client.update_token(request).await?;
 
    set_auth_token(
       AuthToken {
@@ -175,9 +137,7 @@ async fn update_token<T: Serialize>(
 }
 
 #[get("/login")]
-pub async fn login(
-   env: &State<Env>, cookies: &CookieJar<'_>, client: &State<ClientWithMiddleware>,
-) -> Result<(), (Status, String)> {
+pub async fn login(env: &State<Env>, cookies: &CookieJar<'_>, client: &State<DiscordClient>) -> ApiResponse<()> {
    get_auth_token(env, cookies, client).await.map(|_| ())
 }
 
@@ -190,7 +150,7 @@ pub fn logout(cookies: &CookieJar<'_>) {
 
 #[get("/auth?<code>&<state>")]
 pub async fn authorize(
-   code: &str, state: &str, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<ClientWithMiddleware>,
+   code: &str, state: &str, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<DiscordClient>,
 ) -> Result<Redirect, Status> {
    let state: AuthState = match base64::decode(state)
       .ok()
@@ -202,7 +162,7 @@ pub async fn authorize(
    };
    if cookies
       .get_private(SESSION_COOKIE_NAME)
-      .map(|cookie| cookie.value().to_string())
+      .map(|cookie| cookie.value().to_owned())
       .filter(|session| *session == state.token)
       .is_none()
    {
@@ -222,5 +182,5 @@ pub async fn authorize(
       client,
    )
    .await
-   .map(|_| Redirect::to(state.redirect_to.unwrap_or_else(|| "/".to_string())))
+   .map(|_| Redirect::to(state.redirect_to.unwrap_or_else(|| "/".to_owned())))
 }

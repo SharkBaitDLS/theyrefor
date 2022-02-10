@@ -1,16 +1,17 @@
+mod app_route;
+mod http_client;
+mod pages;
+
 use log::debug;
 use reqwasm::http::Request;
-use theyrefor_models::User;
 use yew::{classes, html, Component, ComponentLink, Html, ShouldRender};
 use yew_router::agent::RouteRequest;
 use yew_router::{agent::RouteAgentDispatcher, route::Route, switch::Permissive};
 use yewtil::future::LinkFuture;
 
-mod http_client;
-mod pages;
-use pages::{Admin, Guilds, Home, NotFound, Soundboard};
-mod app_route;
 use app_route::{AppAnchor, AppRoute, AppRouter};
+use pages::{Admin, Guilds, Home, NotFound, Soundboard};
+use theyrefor_models::User;
 
 pub enum Msg {
    ToggleNavbar,

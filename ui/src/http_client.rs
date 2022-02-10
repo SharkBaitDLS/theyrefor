@@ -5,9 +5,10 @@ use reqwasm::{
    Error,
 };
 use serde::de::DeserializeOwned;
-use theyrefor_models::AuthState;
 use url::Url;
 use yew::services::fetch::StatusCode;
+
+use theyrefor_models::AuthState;
 
 static STATE_PARAM: &str = "state";
 

@@ -1,9 +1,9 @@
-use theyrefor_models::GuildClips;
 use web_sys::MouseEvent;
 use yew::{Callback, Component, ComponentLink, Html, Properties, ShouldRender};
 use yewtil::future::LinkFuture;
 
 use crate::http_client;
+use theyrefor_models::GuildClips;
 
 #[derive(Clone, Properties)]
 pub struct Props {

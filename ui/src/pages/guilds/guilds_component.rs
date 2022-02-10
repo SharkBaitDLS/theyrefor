@@ -1,8 +1,8 @@
-use theyrefor_models::Guild;
 use yew::{Component, ComponentLink, Html, Properties, ShouldRender};
 use yewtil::future::LinkFuture;
 
 use crate::http_client;
+use theyrefor_models::Guild;
 
 pub enum Msg {
    Done(Vec<Guild>),
