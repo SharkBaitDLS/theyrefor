@@ -49,7 +49,7 @@ pub async fn get_admin_guilds(
             Some(guild)
          } else {
             match client.get_guild_user_roles(&env.bot_token, &guild.id, &user_id).await {
-               Ok(data) => {
+               Ok(roles) => {
                   let path: PathBuf = [&env.clip_directory, &guild.id, ".role_id"].iter().collect();
 
                   let mut admin_role_data = String::new();
@@ -59,7 +59,7 @@ pub async fn get_admin_guilds(
                      }
                   }
 
-                  if data.roles.contains(&admin_role_data) {
+                  if roles.contains(&admin_role_data) {
                      Some(guild)
                   } else {
                      None

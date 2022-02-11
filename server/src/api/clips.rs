@@ -26,42 +26,58 @@ pub async fn get_clips(
 ) -> ApiResponse<Json<GuildClips>> {
    auth::get_auth_token(env, cookies, client)
       .and_then(|token| client.get_user_guilds(token))
-      .await
-      .and_then(|guilds| {
+      .and_then(|guilds| async move {
          let guild = guilds
-            .iter()
+            .into_iter()
             .find(|guild| guild.id == id)
             .ok_or((Status::Forbidden, String::new()))?;
          let guild_dir = String::from(&env.clip_directory) + "/" + &id;
 
-         let clip_names = fs::read_dir(guild_dir)
-            .map(|entries| {
-               entries
-                  .filter_map(|maybe_entry| {
-                     maybe_entry
-                        .map(|entry| {
-                           let path = entry.path();
-                           path
-                              .file_stem()
-                              .filter(|_| {
-                                 path.is_file() && path.extension().and_then(|ext| ext.to_str()) == Some("mp3")
-                              })
-                              .and_then(|stem| stem.to_str())
-                              .map(String::from)
-                        })
-                        .ok()
-                        .flatten()
-                  })
+         let guild_users: Vec<String> = client
+            .get_guild_members(&env.bot_token, &guild.id)
+            .map_ok(|members| {
+               members
+                  .into_iter()
+                  .map(|member| member.user.username.to_lowercase())
                   .collect()
             })
-            .unwrap_or_else(|err| {
-               error!("Could not list audio file directory: {}", err);
-               BinaryHeap::new()
-            });
+            .await?;
+
+         let (user_names, clip_names) = get_clip_names(guild_dir)
+            .into_sorted_vec()
+            .into_iter()
+            .partition(|name| guild_users.contains(&name.to_lowercase()));
 
          Ok(Json(GuildClips {
-            clip_names: clip_names.into_sorted_vec(),
+            clip_names,
+            user_names,
             guild_name: guild.name.clone(),
          }))
+      })
+      .await
+}
+
+fn get_clip_names(guild_dir: String) -> BinaryHeap<String> {
+   fs::read_dir(guild_dir)
+      .map(|entries| {
+         entries
+            .filter_map(|maybe_entry| {
+               maybe_entry
+                  .map(|entry| {
+                     let path = entry.path();
+                     path
+                        .file_stem()
+                        .filter(|_| path.is_file() && path.extension().and_then(|ext| ext.to_str()) == Some("mp3"))
+                        .and_then(|stem| stem.to_str())
+                        .map(String::from)
+                  })
+                  .ok()
+                  .flatten()
+            })
+            .collect()
+      })
+      .unwrap_or_else(|err| {
+         error!("Could not list audio file directory: {}", err);
+         BinaryHeap::new()
       })
 }

@@ -17,8 +17,14 @@ pub struct DiscordGuild {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct DiscordGuildRoles {
+pub struct DiscordGuildMember {
+   pub user: DiscordGuildUser,
    pub roles: Vec<String>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct DiscordGuildUser {
+   pub username: String,
 }
 
 impl From<DiscordGuild> for Guild {

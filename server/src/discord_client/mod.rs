@@ -11,7 +11,7 @@ use crate::api::ApiResponse;
 use theyrefor_models::User;
 use util::DiscordBotAuthBuilder;
 
-pub use models::{DiscordAuthResponse, DiscordGuild, DiscordGuildRoles};
+pub use models::{DiscordAuthResponse, DiscordGuild, DiscordGuildMember};
 
 const DISCORD_API_VER: u8 = 9;
 
@@ -60,9 +60,24 @@ impl DiscordClient {
          .await
    }
 
+   pub async fn get_guild_members<T: Display>(
+      &self, bot_token: T, guild_id: &str,
+   ) -> ApiResponse<Vec<DiscordGuildMember>> {
+      self
+         .client
+         .get(format!(
+            "https://discord.com/api/v{}/guilds/{}/members?limit=1000",
+            DISCORD_API_VER, guild_id,
+         ))
+         .bot_auth(bot_token)
+         .send()
+         .then(util::deserialize)
+         .await
+   }
+
    pub async fn get_guild_user_roles<T: Display>(
       &self, bot_token: T, guild_id: &str, user_id: &str,
-   ) -> ApiResponse<DiscordGuildRoles> {
+   ) -> ApiResponse<Vec<String>> {
       self
          .client
          .get(format!(
@@ -71,7 +86,8 @@ impl DiscordClient {
          ))
          .bot_auth(bot_token)
          .send()
-         .then(util::deserialize::<DiscordGuildRoles>)
+         .then(util::deserialize::<DiscordGuildMember>)
+         .map_ok(|member| member.roles)
          .await
    }
 
