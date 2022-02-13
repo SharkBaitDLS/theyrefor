@@ -1,16 +1,14 @@
-mod app_route;
 mod http_client;
 mod pages;
+mod route;
 
 use log::debug;
 use reqwasm::http::Request;
-use yew::{classes, html, Component, ComponentLink, Html, ShouldRender};
-use yew_router::agent::RouteRequest;
-use yew_router::{agent::RouteAgentDispatcher, route::Route, switch::Permissive};
-use yewtil::future::LinkFuture;
+use yew::{classes, html, Component, Context, Html};
+use yew_router::{components::Link, router::BrowserRouter, Switch};
 
-use app_route::{AppAnchor, AppRoute, AppRouter};
 use pages::{Admin, Guilds, Home, NotFound, Soundboard};
+use route::Route;
 use theyrefor_models::User;
 
 pub enum Msg {
@@ -29,7 +27,6 @@ async fn get_user() -> Option<User> {
 }
 
 pub struct Model {
-   link: ComponentLink<Self>,
    navbar_active: bool,
    user: Option<User>,
 }
@@ -37,16 +34,15 @@ impl Component for Model {
    type Message = Msg;
    type Properties = ();
 
-   fn create(_props: Self::Properties, link: ComponentLink<Self>) -> Self {
-      link.send_future(async { Msg::UserData(get_user().await) });
+   fn create(context: &Context<Self>) -> Self {
+      context.link().send_future(async { Msg::UserData(get_user().await) });
       Self {
-         link,
          navbar_active: false,
          user: None,
       }
    }
 
-   fn update(&mut self, msg: Self::Message) -> ShouldRender {
+   fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
       let current_user = self.user.clone();
       match msg {
          Msg::ToggleNavbar => self.navbar_active = !self.navbar_active,
@@ -57,7 +53,7 @@ impl Component for Model {
                debug!("Failed to log in: {:?}", err);
             }
          }),
-         Msg::Logout => self.link.send_future(async {
+         Msg::Logout => ctx.link().send_future(async {
             match Request::post("/api/logout").send().await {
                Ok(response) if response.status() == 200 => Msg::UserData(None),
                _ => Msg::UserData(current_user),
@@ -67,38 +63,34 @@ impl Component for Model {
       true
    }
 
-   fn change(&mut self, _props: Self::Properties) -> ShouldRender {
-      false
-   }
-
-   fn view(&self) -> Html {
+   fn view(&self, ctx: &Context<Self>) -> Html {
       html! {
-         <div class="main is-flex is-flex-direction-column">
-            { self.view_nav() }
+         <BrowserRouter>
+            <div class="main is-flex is-flex-direction-column">
+               { self.view_nav(ctx) }
 
-            <main>
-               <AppRouter render=AppRouter::render(Self::route) redirect=AppRouter::redirect(|route: Route| {
-                  AppRoute::NotFound(Permissive(Some(route.route))) }) />
-            </main>
-            <div class="is-flex-grow-1"/>
-            <footer class="footer mt-auto">
-               <div class="content has-text-centered">
-                  { "Powered by " }
-                  <a href="https://yew.rs">{ "Yew" }</a>
-                  { " on "}
-                  <a href="https://rocket.rs">{ "Rocket" }</a>
-                  { " using " }
-                  <a href="https://bulma.io">{ "Bulma" }</a>
-               </div>
-            </footer>
-         </div>
+               <main>
+                  <Switch<Route> render={Switch::render(switch)} />
+               </main>
+               <div class="is-flex-grow-1"/>
+               <footer class="footer mt-auto">
+                  <div class="content has-text-centered">
+                     { "Powered by " }
+                     <a href="https://yew.rs">{ "Yew" }</a>
+                     { " on "}
+                     <a href="https://rocket.rs">{ "Rocket" }</a>
+                     { " using " }
+                     <a href="https://bulma.io">{ "Bulma" }</a>
+                  </div>
+               </footer>
+            </div>
+         </BrowserRouter>
       }
    }
 }
 impl Model {
-   fn view_nav(&self) -> Html {
+   fn view_nav(&self, ctx: &Context<Self>) -> Html {
       let Self {
-         ref link,
          navbar_active,
          ref user,
          ..
@@ -109,27 +101,27 @@ impl Model {
       html! {
          <nav class="navbar is-primary" role="navigation" aria-label="main navigation">
             <div class="navbar-brand">
-               <AppAnchor classes="navbar-item is-size-3 my-0 py-0" route=AppRoute::Home>
+               <Link<Route> classes="navbar-item is-size-3 my-0 py-0" to={Route::Home}>
                   { "My Man" }
-               </AppAnchor>
-               <a role="button" class=classes!("navbar-burger", "burger", active_class) aria-label="menu"
-                  aria-expanded=navbar_active.to_string() onclick=link.callback(|_| Msg::ToggleNavbar)>
+               </Link<Route>>
+               <a role="button" class={classes!("navbar-burger", "burger", active_class)} aria-label="menu"
+                  aria-expanded={navbar_active.to_string()} onclick={ctx.link().callback(|_| Msg::ToggleNavbar)}>
                   <span aria-hidden="true"></span>
                   <span aria-hidden="true"></span>
                   <span aria-hidden="true"></span>
                </a>
             </div>
-            <div class=classes!("navbar-menu", active_class) onclick=link.callback(|_| Msg::DisableNavbar)>
+            <div class={classes!("navbar-menu", active_class)} onclick={ctx.link().callback(|_| Msg::DisableNavbar)}>
                {
                   if user.is_some() {
                      html! {
                         <div class="navbar-start">
-                           <AppAnchor classes="navbar-item" route=AppRoute::Clips>
+                           <Link<Route> classes="navbar-item" to={Route::Clips}>
                               { "Clips" }
-                           </AppAnchor>
-                           // <AppAnchor classes="navbar-item" route=AppRoute::Servers>
+                           </Link<Route>>
+                           // <Link<Route> classes="navbar-item" to=AppRoute::Servers>
                            //    { "Manage Servers" }
-                           // </AppAnchor>
+                           // </Link<Route>>
                         </div>
                      }
                   } else {
@@ -141,11 +133,12 @@ impl Model {
                   match user {
                      Some(user) => if navbar_active {
                         html! {
-                           <a class="navbar-item" onclick=link.callback(|_| {
-                              let mut router: RouteAgentDispatcher<()> = RouteAgentDispatcher::new();
-                              router.send(RouteRequest::ReplaceRoute(Route::from(AppRoute::Home)));
-                              Msg::Logout
-                           })>{ "Log Out " }<p class="has-text-grey">{ format!("(signed in as {})", &user.username) }</p></a>
+                           <div onclick={ctx.link().callback(|_| { Msg::Logout })}>
+                              <Link<Route> classes="navbar-item" to={Route::Home}>
+                                 { "Log Out" }
+                                 <p class="has-text-grey">{ format!("(signed in as {})", &user.username) }</p>
+                              </Link<Route>>
+                           </div>
                         }
                      } else {
                         html! {
@@ -156,7 +149,7 @@ impl Model {
                                        None => html! {},
                                        Some(image) => html! {
                                           <figure class="image is-32x32">
-                                             <img class="is-rounded" style="max-height:100%" src=image.clone() />
+                                             <img class="is-rounded" style="max-height:100%" src={image.clone()} />
                                           </figure>
                                        }
                                     }
@@ -164,16 +157,18 @@ impl Model {
                                  <div class="has-text-white ml-2">{ &user.username }</div>
                               </div>
                               <div class="navbar-dropdown">
-                                 <a class="navbar-item" onclick=link.callback(|_| {
-                                    let mut router: RouteAgentDispatcher<()> = RouteAgentDispatcher::new();
-                                    router.send(RouteRequest::ReplaceRoute(Route::from(AppRoute::Home)));
-                                    Msg::Logout
-                                 })>{ "Log Out" }</a>
+                                 <div onclick={ctx.link().callback(|_| { Msg::Logout })}>
+                                    <Link<Route> classes="navbar-item" to={Route::Home}>
+                                       { "Log Out" }
+                                    </Link<Route>>
+                                 </div>
                               </div>
                            </div>
                         }
                      },
-                     None => html! { <a class="navbar-item" onclick=link.callback(|_| Msg::Login)>{ "Log In" }</a> }
+                     None => html! {
+                        <a class="navbar-item" onclick={ctx.link().callback(|_| Msg::Login)}>{ "Log In" }</a>
+                     }
                   }
                }
                </div>
@@ -181,27 +176,27 @@ impl Model {
          </nav>
       }
    }
+}
 
-   fn route(route: AppRoute) -> Html {
-      match route {
-         AppRoute::Soundboard(id) => {
-            html! { <Soundboard guild_id=id /> }
-         }
-         AppRoute::Clips => {
-            html! { <Guilds /> }
-         }
-         AppRoute::Servers => {
-            html! { <Guilds admin=true /> }
-         }
-         AppRoute::Server(id) => {
-            html! { <Admin guild_id=id /> }
-         }
-         AppRoute::Home => {
-            html! { <Home /> }
-         }
-         AppRoute::NotFound(Permissive(route)) => {
-            html! { <NotFound route=route /> }
-         }
+fn switch(route: &Route) -> Html {
+   match route.clone() {
+      Route::Soundboard { guild_id: id } => {
+         html! { <Soundboard guild_id={id} /> }
+      }
+      Route::Clips => {
+         html! { <Guilds /> }
+      }
+      Route::Servers => {
+         html! { <Guilds admin=true /> }
+      }
+      Route::Server { guild_id: id } => {
+         html! { <Admin guild_id={id} /> }
+      }
+      Route::Home => {
+         html! { <Home /> }
+      }
+      Route::NotFound => {
+         html! { <NotFound /> }
       }
    }
 }

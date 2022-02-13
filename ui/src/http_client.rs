@@ -1,3 +1,4 @@
+use http::StatusCode;
 use log::error;
 use reqwasm::{
    http::{Request, Response},
@@ -5,7 +6,6 @@ use reqwasm::{
 };
 use serde::de::DeserializeOwned;
 use url::Url;
-use yew::services::fetch::StatusCode;
 
 use theyrefor_models::AuthState;
 

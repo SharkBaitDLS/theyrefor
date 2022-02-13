@@ -1,23 +1,15 @@
-use yew::{html, Component, ComponentLink, Html, ShouldRender};
+use yew::{html, Component, Context, Html};
 
 pub struct Home;
 impl Component for Home {
    type Message = ();
    type Properties = ();
 
-   fn create(_props: Self::Properties, _link: ComponentLink<Self>) -> Self {
+   fn create(_ctx: &Context<Self>) -> Self {
       Self
    }
 
-   fn update(&mut self, _msg: Self::Message) -> ShouldRender {
-      false
-   }
-
-   fn change(&mut self, _props: Self::Properties) -> ShouldRender {
-      false
-   }
-
-   fn view(&self) -> Html {
+   fn view(&self, _ctx: &Context<Self>) -> Html {
       html! {
          <div class="tile is-ancestor is-vertical">
             <div class="tile is-child hero">

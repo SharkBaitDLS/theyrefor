@@ -1,7 +1,7 @@
-use yew::{html, Html};
+use yew::{html, Context, Html};
 
 impl super::Soundboard {
-   pub(super) fn render(&self) -> Html {
+   pub(super) fn render(&self, ctx: &Context<Self>) -> Html {
       match &self.data {
          // Loading
          None => html! {
@@ -63,7 +63,7 @@ impl super::Soundboard {
                                  <div class="box container is-flex is-align-items-center p-2">
                                     <div class="tracklist-text mr-auto">{ name }</div>
                                     <div class="ml-auto">
-                                       <button class="button is-link" onclick=&self.playback_callback(name.to_string())>
+                                       <button class="button is-link" onclick={&self.playback_callback(ctx, name.to_string())}>
                                           {"Play"}
                                        </button>
                                     </div>
@@ -86,7 +86,7 @@ impl super::Soundboard {
                                  <div class="box container is-flex is-align-items-center p-2">
                                     <div class="tracklist-text mr-auto">{ name }</div>
                                     <div class="ml-auto">
-                                       <button class="button is-link" onclick=&self.playback_callback(name.to_string())>
+                                       <button class="button is-link" onclick={&self.playback_callback(ctx, name.to_string())}>
                                           {"Play"}
                                        </button>
                                     </div>

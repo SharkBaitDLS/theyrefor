@@ -1,11 +1,10 @@
 use web_sys::MouseEvent;
-use yew::{Callback, Component, ComponentLink, Html, Properties, ShouldRender};
-use yewtil::future::LinkFuture;
+use yew::{Callback, Component, Context, Html, Properties};
 
 use crate::http_client;
 use theyrefor_models::GuildClips;
 
-#[derive(Clone, Properties)]
+#[derive(Clone, PartialEq, Properties)]
 pub struct Props {
    pub guild_id: String,
 }
@@ -34,31 +33,29 @@ impl From<PlaybackMsg> for Msg {
 pub struct Soundboard {
    pub(super) data: Option<Result<GuildClips, ()>>,
    pub(super) playback_error: Option<()>,
-   pub(super) link: ComponentLink<Self>,
    guild_id: String,
 }
 impl Component for Soundboard {
    type Message = Msg;
    type Properties = Props;
 
-   fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-      link.send_future(super::get_clips(props.guild_id.clone()));
+   fn create(ctx: &Context<Self>) -> Self {
+      ctx.link().send_future(super::get_clips(ctx.props().guild_id.clone()));
       Self {
          data: None,
          playback_error: None,
-         link,
-         guild_id: props.guild_id,
+         guild_id: ctx.props().guild_id.clone(),
       }
    }
 
-   fn update(&mut self, msg: Self::Message) -> ShouldRender {
+   fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
       match msg {
          Self::Message::Data(data) => match data {
             super::Msg::Done(response) => self.data = Some(Ok(response)),
             super::Msg::Fail => self.data = Some(Err(())),
          },
          Self::Message::Playback(playback) => match playback {
-            PlaybackMsg::Play(clip_name) => self.link.send_future(play_clip(self.guild_id.clone(), clip_name)),
+            PlaybackMsg::Play(clip_name) => ctx.link().send_future(play_clip(self.guild_id.clone(), clip_name)),
             PlaybackMsg::Success => self.playback_error = None,
             PlaybackMsg::Fail => self.playback_error = Some(()),
          },
@@ -66,22 +63,23 @@ impl Component for Soundboard {
       true
    }
 
-   fn change(&mut self, props: Self::Properties) -> ShouldRender {
-      if props.guild_id != self.guild_id {
-         self.link.send_future(super::get_clips(props.guild_id));
+   fn changed(&mut self, ctx: &Context<Self>) -> bool {
+      if ctx.props().guild_id != self.guild_id {
+         self.guild_id = ctx.props().guild_id.clone();
+         ctx.link().send_future(super::get_clips(ctx.props().guild_id.clone()));
          true
       } else {
          false
       }
    }
 
-   fn view(&self) -> Html {
-      self.render()
+   fn view(&self, ctx: &Context<Self>) -> Html {
+      self.render(ctx)
    }
 }
 impl Soundboard {
-   pub fn playback_callback(&self, name: String) -> Callback<MouseEvent> {
-      self.link.callback(move |_| PlaybackMsg::Play(name.clone()))
+   pub fn playback_callback(&self, ctx: &Context<Self>, name: String) -> Callback<MouseEvent> {
+      ctx.link().callback(move |_| PlaybackMsg::Play(name.clone()))
    }
 }
 

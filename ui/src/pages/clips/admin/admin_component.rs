@@ -1,5 +1,4 @@
-use yew::{Component, ComponentLink, Html, Properties, ShouldRender};
-use yewtil::future::LinkFuture;
+use yew::{Component, Context, Html, Properties};
 
 use theyrefor_models::GuildClips;
 #[derive(Clone, Debug, Eq, PartialEq, Properties)]
@@ -9,7 +8,6 @@ pub struct Props {
 
 pub struct Admin {
    pub(super) data: Option<Result<GuildClips, ()>>,
-   pub(super) link: ComponentLink<Self>,
    guild_id: String,
 }
 
@@ -18,16 +16,15 @@ impl Component for Admin {
 
    type Properties = Props;
 
-   fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-      link.send_future(super::get_clips(props.guild_id.clone()));
+   fn create(ctx: &Context<Self>) -> Self {
+      ctx.link().send_future(super::get_clips(ctx.props().guild_id.clone()));
       Self {
          data: None,
-         link,
-         guild_id: props.guild_id,
+         guild_id: ctx.props().guild_id.clone(),
       }
    }
 
-   fn update(&mut self, msg: Self::Message) -> ShouldRender {
+   fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
       match msg {
          Self::Message::Done(response) => self.data = Some(Ok(response)),
          Self::Message::Fail => self.data = Some(Err(())),
@@ -35,16 +32,17 @@ impl Component for Admin {
       true
    }
 
-   fn change(&mut self, props: Self::Properties) -> ShouldRender {
-      if props.guild_id != self.guild_id {
-         self.link.send_future(super::get_clips(props.guild_id));
+   fn changed(&mut self, ctx: &Context<Self>) -> bool {
+      if ctx.props().guild_id != self.guild_id {
+         self.guild_id = ctx.props().guild_id.clone();
+         ctx.link().send_future(super::get_clips(ctx.props().guild_id.clone()));
          true
       } else {
          false
       }
    }
 
-   fn view(&self) -> Html {
-      self.render()
+   fn view(&self, ctx: &Context<Self>) -> Html {
+      self.render(ctx)
    }
 }
