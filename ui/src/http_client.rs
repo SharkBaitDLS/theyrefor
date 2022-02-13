@@ -1,4 +1,3 @@
-use anyhow::anyhow;
 use log::error;
 use reqwasm::{
    http::{Request, Response},
@@ -19,7 +18,10 @@ where
    match Request::get(uri).send().await {
       Ok(response) if response.status() == StatusCode::UNAUTHORIZED => update_redirect(response).await,
       Ok(response) if response.status() == StatusCode::OK => response.json().await,
-      Ok(response) => Err(Error::Other(anyhow::anyhow!(response.status()))),
+      Ok(response) => {
+         error!("Unexpected response: {:?}", response.status());
+         Ok(None)
+      }
       Err(err) => {
          error!("{:?}", err);
          Err(err)
@@ -31,7 +33,10 @@ pub async fn post_with_auth(uri: &str) -> Result<Option<()>, Error> {
    match Request::post(uri).send().await {
       Ok(response) if response.status() == StatusCode::UNAUTHORIZED => update_redirect(response).await,
       Ok(response) if response.status() == StatusCode::OK => Ok(Some(())),
-      Ok(response) => Err(Error::Other(anyhow::anyhow!(response.status()))),
+      Ok(response) => {
+         error!("Unexpected response: {:?}", response.status());
+         Ok(None)
+      }
       Err(err) => {
          error!("{:?}", err);
          Err(err)
@@ -62,5 +67,5 @@ async fn update_redirect<T>(response: Response) -> Result<Option<T>, Error> {
    location
       .set_href(url.as_str())
       .map(|_| None)
-      .map_err(|_| Error::Other(anyhow!("Failed to update HREF")))
+      .map_err(|err| Error::JsError(err.try_into().unwrap()))
 }

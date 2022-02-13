@@ -8,7 +8,7 @@ use crate::api::{ApiError, ApiResponse};
 pub trait DiscordBotAuthBuilder {
    fn bot_auth<T: fmt::Display>(self, token: T) -> RequestBuilder;
 }
-impl DiscordBotAuthBuilder for reqwest_middleware::RequestBuilder {
+impl DiscordBotAuthBuilder for RequestBuilder {
    fn bot_auth<T>(self, token: T) -> RequestBuilder
    where
       T: fmt::Display,

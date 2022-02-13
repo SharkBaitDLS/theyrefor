@@ -5,11 +5,10 @@ edition = "2021"
 authors = ["Isaac M. Good <imgood@imgoodproductions.org>"]
 
 [dependencies]
-anyhow = "1.0"
 base64 = "0.13"
 bincode = "1.3"
 log = "*"
-reqwasm = "0.2"
+reqwasm = "0.4"
 serde = "1.0"
 theyrefor-models = { path = "../models" }
 url = "2.2"

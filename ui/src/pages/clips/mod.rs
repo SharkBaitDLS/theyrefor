@@ -9,9 +9,6 @@ pub use soundboard::Soundboard;
 
 pub enum Msg {
    Done(GuildClips),
-   Play(String),
-   PlaybackSuccess,
-   PlaybackError,
    Fail,
 }
 

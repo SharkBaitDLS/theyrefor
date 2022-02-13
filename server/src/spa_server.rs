@@ -1,5 +1,3 @@
-use std::path::PathBuf;
-
 use rocket::{
    figment::Source,
    fs::NamedFile,
@@ -10,6 +8,7 @@ use rocket::{
    route::{Handler, Outcome},
    Data, Request, Route,
 };
+use std::path::PathBuf;
 
 #[derive(Clone)]
 pub struct SPAServer {
