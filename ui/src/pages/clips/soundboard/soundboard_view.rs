@@ -63,7 +63,9 @@ impl super::Soundboard {
                                  <div class="box container is-flex is-align-items-center p-2">
                                     <div class="tracklist-text mr-auto">{ name }</div>
                                     <div class="ml-auto">
-                                       <button class="button is-link" onclick={&self.playback_callback(ctx, name.to_string())}>
+                                       <button class="button is-link" onclick={
+                                          &self.playback_callback(ctx, name.to_string())
+                                       }>
                                           {"Play"}
                                        </button>
                                     </div>
@@ -80,13 +82,15 @@ impl super::Soundboard {
                <div class="mx-4">
                   <div class="tracklist container mt-2 mb-4">
                      {
-                        for response.user_names.iter().map(|name| {
+                        for response.user_clip_names.iter().map(|name| {
                            html! {
                               <div>
                                  <div class="box container is-flex is-align-items-center p-2">
                                     <div class="tracklist-text mr-auto">{ name }</div>
                                     <div class="ml-auto">
-                                       <button class="button is-link" onclick={&self.playback_callback(ctx, name.to_string())}>
+                                       <button class="button is-link" onclick={
+                                          &self.playback_callback(ctx, name.to_string())
+                                       }>
                                           {"Play"}
                                        </button>
                                     </div>

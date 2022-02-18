@@ -31,33 +31,39 @@ pub async fn get_clips(
             .into_iter()
             .find(|guild| guild.id == id)
             .ok_or((Status::Forbidden, String::new()))?;
+
          let guild_dir = String::from(&env.clip_directory) + "/" + &id;
+         let clip_names = get_clip_names(guild_dir);
 
-         let guild_users: Vec<String> = client
-            .get_guild_members(&env.bot_token, &guild.id)
-            .map_ok(|members| {
-               members
-                  .into_iter()
-                  .map(|member| member.user.username.to_lowercase())
-                  .collect()
-            })
-            .await?;
-
-         let (user_names, clip_names) = get_clip_names(guild_dir)
-            .into_sorted_vec()
-            .into_iter()
-            .partition(|name| guild_users.contains(&name.to_lowercase()));
+         let user_names = {
+            let mut user_names: Vec<String> = client
+               .get_guild_members(&env.bot_token, &guild.id)
+               .map_ok(|members| members.into_iter().map(|member| member.user.username).collect())
+               .await?;
+            user_names.sort_unstable_by_key(|name| name.to_lowercase());
+            user_names
+         };
+         let user_clip_names: Vec<String> = user_names
+            .iter()
+            .filter(|name| clip_names.contains(&name.to_lowercase()))
+            .map(|name| name.to_owned())
+            .collect();
+         let user_clip_names_lower: Vec<String> = user_clip_names.iter().map(|name| name.to_lowercase()).collect();
 
          Ok(Json(GuildClips {
-            clip_names,
+            clip_names: clip_names
+               .into_iter()
+               .filter(|name| !user_clip_names_lower.contains(name))
+               .collect(),
+            user_clip_names,
             user_names,
-            guild_name: guild.name.clone(),
+            guild_name: guild.name,
          }))
       })
       .await
 }
 
-fn get_clip_names(guild_dir: String) -> BinaryHeap<String> {
+fn get_clip_names(guild_dir: String) -> Vec<String> {
    fs::read_dir(guild_dir)
       .map(|entries| {
          entries
@@ -69,7 +75,7 @@ fn get_clip_names(guild_dir: String) -> BinaryHeap<String> {
                         .file_stem()
                         .filter(|_| path.is_file() && path.extension().and_then(|ext| ext.to_str()) == Some("mp3"))
                         .and_then(|stem| stem.to_str())
-                        .map(String::from)
+                        .map(|os_str| String::from(os_str).to_lowercase())
                   })
                   .ok()
                   .flatten()
@@ -80,4 +86,5 @@ fn get_clip_names(guild_dir: String) -> BinaryHeap<String> {
          error!("Could not list audio file directory: {}", err);
          BinaryHeap::new()
       })
+      .into_sorted_vec()
 }

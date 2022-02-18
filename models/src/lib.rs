@@ -16,6 +16,7 @@ pub struct Guild {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GuildClips {
    pub clip_names: Vec<String>,
+   pub user_clip_names: Vec<String>,
    pub user_names: Vec<String>,
    pub guild_name: String,
 }
