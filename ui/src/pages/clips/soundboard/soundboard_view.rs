@@ -43,7 +43,7 @@ impl super::Soundboard {
                                        <p>{ "Error" }</p>
                                     </div>
                                     <div class="message-body">
-                                       { "Could not play clip. Make sure you are in a voice channel in this server." }
+                                       { "Could not play clip." }
                                     </div>
                                  </article>
                               </div>
@@ -62,13 +62,20 @@ impl super::Soundboard {
                               <div>
                                  <div class="box container is-flex is-align-items-center p-2">
                                     <div class="tracklist-text mr-auto">{ name }</div>
-                                    <div class="ml-auto">
-                                       <button class="button is-link" onclick={
-                                          &self.playback_callback(ctx, name.to_string())
-                                       }>
-                                          {"Play"}
-                                       </button>
-                                    </div>
+                                    <button class="ml-auto button is-small is-primary" onclick={
+                                       &self.preview_callback(ctx)
+                                    }>
+                                       <audio controls=false preload="none">
+                                          <source src={format!("/api/audio/{}/{}", ctx.props().guild_id, name)}
+                                                  type="audio/mpeg"/>
+                                       </audio>
+                                       <i class="fa-solid fa-headphones fa-fw"></i>
+                                    </button>
+                                    <button class="button is-small ml-1 is-link" onclick={
+                                       &self.playback_callback(ctx, name.to_string())
+                                    }>
+                                       <i class="fa-solid fa-play fa-fw"></i>
+                                    </button>
                                  </div>
                               </div>
                            }
@@ -87,13 +94,20 @@ impl super::Soundboard {
                               <div>
                                  <div class="box container is-flex is-align-items-center p-2">
                                     <div class="tracklist-text mr-auto">{ name }</div>
-                                    <div class="ml-auto">
-                                       <button class="button is-link" onclick={
-                                          &self.playback_callback(ctx, name.to_string())
-                                       }>
-                                          {"Play"}
-                                       </button>
-                                    </div>
+                                    <button class="ml-auto button is-small is-primary" onclick={
+                                       &self.preview_callback(ctx)
+                                    }>
+                                       <audio controls=false preload="none">
+                                          <source src={format!("/api/audio/{}/{}", ctx.props().guild_id, name)}
+                                                  type="audio/mpeg"/>
+                                       </audio>
+                                       <i class="fa-solid fa-headphones fa-fw"></i>
+                                    </button>
+                                    <button class="button is-small ml-1 is-link" onclick={
+                                       &self.playback_callback(ctx, name.to_string())
+                                    }>
+                                       <i class="fa-solid fa-play fa-fw"></i>
+                                    </button>
                                  </div>
                               </div>
                            }

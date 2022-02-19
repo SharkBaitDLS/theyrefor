@@ -43,6 +43,7 @@ fn rocket() -> _ {
       .mount(
          "/api",
          routes![
+            api::audio::get_clip,
             api::auth::authorize,
             api::auth::login,
             api::auth::logout,

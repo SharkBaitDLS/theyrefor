@@ -1,5 +1,6 @@
-use web_sys::MouseEvent;
-use yew::{Callback, Component, Context, Html, Properties};
+use wasm_bindgen::JsCast;
+use web_sys::{HtmlElement, HtmlMediaElement, MouseEvent};
+use yew::{Callback, Component, Context, Html, Properties, TargetCast};
 
 use crate::http_client;
 use theyrefor_models::GuildClips;
@@ -80,6 +81,22 @@ impl Component for Soundboard {
 impl Soundboard {
    pub fn playback_callback(&self, ctx: &Context<Self>, name: String) -> Callback<MouseEvent> {
       ctx.link().callback(move |_| PlaybackMsg::Play(name.clone()))
+   }
+
+   pub fn preview_callback(&self, ctx: &Context<Self>) -> Callback<MouseEvent> {
+      ctx.link().callback(|event: MouseEvent| {
+         if let Some(element) = event.target_dyn_into::<HtmlElement>() {
+            if let Some(audio_element) = element.get_elements_by_tag_name("audio").get_with_index(0) {
+               if let Ok(audio) = audio_element.dyn_into::<HtmlMediaElement>() {
+                  audio.set_volume(0.3);
+                  if audio.play().is_ok() {
+                     return PlaybackMsg::Success;
+                  }
+               }
+            }
+         };
+         PlaybackMsg::Fail
+      })
    }
 }
 

@@ -7,6 +7,13 @@ body {
   height: 100vh;
 }
 
+// Prevent icons from capturing clicks until Yew fixes the current_target for callbacks
+button {
+  > * {
+    pointer-events: none;
+  }
+}
+
 // Clip track list grid
 .tracklist {
   display: grid;
