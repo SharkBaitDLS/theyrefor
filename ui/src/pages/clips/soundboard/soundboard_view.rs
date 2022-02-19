@@ -43,7 +43,7 @@ impl super::Soundboard {
                                        <p>{ "Error" }</p>
                                     </div>
                                     <div class="message-body">
-                                       { "Could not play clip." }
+                                       { "Could not play clip. Make sure you are in a voice channel in this server." }
                                     </div>
                                  </article>
                               </div>
