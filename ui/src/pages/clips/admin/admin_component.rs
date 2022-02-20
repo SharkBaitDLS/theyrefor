@@ -53,6 +53,7 @@ impl Component for Admin {
       match msg {
          Msg::Data(data) => match data {
             super::Msg::Done(response) => self.data = Some(Ok(response)),
+            super::Msg::Unauthorized => {}
             super::Msg::Fail => self.data = Some(Err(())),
          },
          Msg::Delete(delete) => match delete {

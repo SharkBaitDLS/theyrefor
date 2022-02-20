@@ -51,6 +51,7 @@ impl Component for Soundboard {
       match msg {
          Self::Message::Data(data) => match data {
             super::Msg::Done(response) => self.data = Some(Ok(response)),
+            super::Msg::Unauthorized => {}
             super::Msg::Fail => self.data = Some(Err(())),
          },
          Self::Message::Playback(playback) => match playback {

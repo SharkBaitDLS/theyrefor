@@ -14,12 +14,14 @@ pub use soundboard::Soundboard;
 
 pub enum Msg {
    Done(GuildClips),
+   Unauthorized,
    Fail,
 }
 
 async fn get_clips(guild_id: String) -> Msg {
    match http_client::get_with_auth(&format!("/api/clips/{}", guild_id)).await {
       Ok(Some(clips)) => Msg::Done(clips),
+      Ok(None) => Msg::Unauthorized,
       _ => Msg::Fail,
    }
 }
