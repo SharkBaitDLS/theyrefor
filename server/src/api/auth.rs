@@ -1,3 +1,4 @@
+use futures::TryFutureExt;
 use rand::{distributions::Alphanumeric, Rng};
 use rocket::{
    http::{Cookie, CookieJar, SameSite, Status},
@@ -7,7 +8,7 @@ use rocket::{
 use serde::{Deserialize, Serialize};
 use std::time::{Duration, Instant};
 
-use super::{ApiError, ApiResponse};
+use super::{user, ApiError, ApiResponse};
 use crate::{discord_client::DiscordClient, Env};
 use theyrefor_models::AuthState;
 
@@ -138,7 +139,12 @@ async fn update_token<T: Serialize>(
 
 #[get("/login")]
 pub async fn login(env: &State<Env>, cookies: &CookieJar<'_>, client: &State<DiscordClient>) -> ApiResponse<()> {
-   get_auth_token(env, cookies, client).await.map(|_| ())
+   get_auth_token(env, cookies, client)
+      // service call to force reauth in event of invalid token cookie
+      .and_then(|token| user::get_current_user_id(token, client))
+      .await
+      .map(|_| ())
+      .map_err(|_| build_auth_url(env, cookies))
 }
 
 #[post("/logout")]
