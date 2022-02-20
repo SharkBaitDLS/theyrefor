@@ -63,7 +63,7 @@ fn build_auth_url(env: &State<Env>, cookies: &CookieJar<'_>) -> ApiError {
    (
       Status::Unauthorized,
       format!(
-         "{}?client_id={}&redirect_uri={}&response_type=code&scope=guilds&state={}",
+         "{}?client_id={}&redirect_uri={}&response_type=code&scope=identify%20guilds%20guilds.members.read&state={}",
          "https://discord.com/api/oauth2/authorize",
          env.client_id,
          urlencoding::encode(&format!("{}/api/auth", env.base_uri)),
