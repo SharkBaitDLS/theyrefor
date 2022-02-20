@@ -37,28 +37,6 @@ impl super::Soundboard {
                <section class="section is-size-3 has-text-centered">
                   { format!("Clips for {}", response.guild_name) }
                </section>
-               {
-                  if self.playback_error.is_some() {
-                     html! {
-                        <div class="tile is-ancestor columns is-centered mt-2 px-4">
-                           <div class="tile is-4 is-parent">
-                              <div class="tile is-child">
-                                 <article class="message is-danger">
-                                    <div class="message-header">
-                                       <p>{ "Error" }</p>
-                                    </div>
-                                    <div class="message-body">
-                                       { "Could not play clip. Make sure you are in a voice channel in this server." }
-                                    </div>
-                                 </article>
-                              </div>
-                           </div>
-                        </div>
-                     }
-                  } else {
-                     html! {}
-                  }
-               }
                <div class="mx-4">
                   <div class="tracklist container mt-2 mb-4">
                      {
@@ -120,6 +98,25 @@ impl super::Soundboard {
                      }
                   </div>
                </div>
+               {
+                  if self.playback_error.is_some() {
+                     html! {
+                        <article class="message floating-message is-danger">
+                           <div class="message-header">
+                              <p>{ "Error" }</p>
+                              <button class="delete" aria-label="close" onclick={
+                                 ctx.link().callback(|_| PlaybackMsg::Success)
+                              }></button>
+                           </div>
+                           <div class="message-body">
+                              { "Could not play clip. Make sure you are in a voice channel in this server." }
+                           </div>
+                        </article>
+                     }
+                  } else {
+                     html! {}
+                  }
+               }
             </div>
          },
       }
