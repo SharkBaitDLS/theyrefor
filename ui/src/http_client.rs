@@ -44,6 +44,21 @@ pub async fn post_with_auth(uri: &str) -> Result<Option<()>, Error> {
    }
 }
 
+pub async fn delete_with_auth(uri: &str) -> Result<Option<()>, Error> {
+   match Request::delete(uri).send().await {
+      Ok(response) if response.status() == StatusCode::UNAUTHORIZED => update_redirect(response).await,
+      Ok(response) if response.status() == StatusCode::OK => Ok(Some(())),
+      Ok(response) => {
+         error!("Unexpected response: {:?}", response.status());
+         Ok(None)
+      }
+      Err(err) => {
+         error!("{:?}", err);
+         Err(err)
+      }
+   }
+}
+
 async fn update_redirect<T>(response: Response) -> Result<Option<T>, Error> {
    let location = web_sys::window().unwrap().location();
 

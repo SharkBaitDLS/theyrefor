@@ -25,6 +25,13 @@ button {
   text-overflow: ellipsis;
 }
 
+.floating-message {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
 // Loading ellipsis
 .lds-ellipsis {
   display: inline-block;

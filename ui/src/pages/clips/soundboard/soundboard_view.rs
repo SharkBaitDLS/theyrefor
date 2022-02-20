@@ -1,4 +1,9 @@
-use yew::{html, Context, Html};
+use web_sys::MouseEvent;
+use yew::{html, Callback, Context, Html};
+
+use crate::pages::clips;
+
+use super::soundboard_component::PlaybackMsg;
 
 impl super::Soundboard {
    pub(super) fn render(&self, ctx: &Context<Self>) -> Html {
@@ -63,18 +68,18 @@ impl super::Soundboard {
                                  <div class="box container is-flex is-align-items-center p-2">
                                     <div class="tracklist-text mr-auto">{ name }</div>
                                     <button class="ml-auto button is-small is-primary" onclick={
-                                       &self.preview_callback(ctx)
+                                       clips::preview_callback()
                                     }>
                                        <audio controls=false preload="none">
                                           <source src={format!("/api/audio/{}/{}", ctx.props().guild_id, name)}
                                                   type="audio/mpeg"/>
                                        </audio>
-                                       <i class="fa-solid fa-headphones fa-fw"></i>
+                                       <i class="fa-solid fa-headphones fa-fw"/>
                                     </button>
                                     <button class="button is-small ml-1 is-link" onclick={
-                                       &self.playback_callback(ctx, name.to_string())
+                                       playback_callback(ctx, name.to_string())
                                     }>
-                                       <i class="fa-solid fa-play fa-fw"></i>
+                                       <i class="fa-solid fa-play fa-fw"/>
                                     </button>
                                  </div>
                               </div>
@@ -95,18 +100,18 @@ impl super::Soundboard {
                                  <div class="box container is-flex is-align-items-center p-2">
                                     <div class="tracklist-text mr-auto">{ name }</div>
                                     <button class="ml-auto button is-small is-primary" onclick={
-                                       &self.preview_callback(ctx)
+                                       clips::preview_callback()
                                     }>
                                        <audio controls=false preload="none">
                                           <source src={format!("/api/audio/{}/{}", ctx.props().guild_id, name)}
                                                   type="audio/mpeg"/>
                                        </audio>
-                                       <i class="fa-solid fa-headphones fa-fw"></i>
+                                       <i class="fa-solid fa-headphones fa-fw"/>
                                     </button>
                                     <button class="button is-small ml-1 is-link" onclick={
-                                       &self.playback_callback(ctx, name.to_string())
+                                       playback_callback(ctx, name.to_string())
                                     }>
-                                       <i class="fa-solid fa-play fa-fw"></i>
+                                       <i class="fa-solid fa-play fa-fw"/>
                                     </button>
                                  </div>
                               </div>
@@ -119,4 +124,8 @@ impl super::Soundboard {
          },
       }
    }
+}
+
+fn playback_callback(ctx: &Context<super::Soundboard>, name: String) -> Callback<MouseEvent> {
+   ctx.link().callback(move |_| PlaybackMsg::Play(name.clone()))
 }

@@ -4,9 +4,12 @@ use rocket::{
    serde::json::Json,
    State,
 };
-use std::{collections::BinaryHeap, fs};
+use std::{
+   fs,
+   path::{Component, PathBuf},
+};
 
-use super::{auth, user, ApiResponse};
+use super::{auth, guilds, user, ApiResponse};
 use crate::{discord_client::DiscordClient, Env};
 use theyrefor_models::GuildClips;
 
@@ -32,8 +35,11 @@ pub async fn get_clips(
             .find(|guild| guild.id == id)
             .ok_or((Status::Forbidden, String::new()))?;
 
-         let guild_dir = String::from(&env.clip_directory) + "/" + &id;
-         let clip_names = get_clip_names(guild_dir);
+         let guild_dir = [&env.clip_directory, &id].into_iter().collect();
+         let clip_names: Vec<String> = get_clip_names(guild_dir)
+            .into_iter()
+            .map(|name| name.to_lowercase())
+            .collect();
 
          let user_names = {
             let mut user_names: Vec<String> = client
@@ -53,7 +59,7 @@ pub async fn get_clips(
          Ok(Json(GuildClips {
             clip_names: clip_names
                .into_iter()
-               .filter(|name| !user_clip_names_lower.contains(name))
+               .filter(|name| !user_clip_names_lower.contains(&name.to_lowercase()))
                .collect(),
             user_clip_names,
             user_names,
@@ -63,10 +69,43 @@ pub async fn get_clips(
       .await
 }
 
-fn get_clip_names(guild_dir: String) -> Vec<String> {
+#[delete("/clips/<id>/<name>")]
+pub async fn delete_clip(
+   id: String, name: String, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<DiscordClient>,
+) -> ApiResponse<()> {
+   let token = auth::get_auth_token(env, cookies, client).await?;
+   let guilds = guilds::get_mutual_guilds(&token, env, client).await?;
+   let user_id = user::get_current_user_id(&token, client).await?;
+
+   let guild = guilds
+      .into_iter()
+      .find(|guild| guild.id == id)
+      .ok_or((Status::Forbidden, String::new()))?;
+
+   match guilds::take_guild_if_admin(env, client, guild, &user_id).await {
+      None => Err((Status::Forbidden, String::new())),
+      Some(_) => {
+         let mut path: PathBuf = [&env.clip_directory, &id].into_iter().collect();
+         path.push(format!("{}.mp3", name));
+
+         // Security: don't allow directory traversal attacks
+         if path
+            .components()
+            .into_iter()
+            .any(|component| component == Component::ParentDir)
+         {
+            Err((Status::BadRequest, String::new()))
+         } else {
+            fs::remove_file(path).map_err(|_| (Status::InternalServerError, String::new()))
+         }
+      }
+   }
+}
+
+fn get_clip_names(guild_dir: PathBuf) -> Vec<String> {
    fs::read_dir(guild_dir)
       .map(|entries| {
-         entries
+         let mut clips = entries
             .filter_map(|maybe_entry| {
                maybe_entry
                   .map(|entry| {
@@ -75,16 +114,17 @@ fn get_clip_names(guild_dir: String) -> Vec<String> {
                         .file_stem()
                         .filter(|_| path.is_file() && path.extension().and_then(|ext| ext.to_str()) == Some("mp3"))
                         .and_then(|stem| stem.to_str())
-                        .map(|os_str| String::from(os_str).to_lowercase())
+                        .map(String::from)
                   })
                   .ok()
                   .flatten()
             })
-            .collect()
+            .collect::<Vec<_>>();
+         clips.sort_unstable_by_key(|clip| clip.to_lowercase());
+         clips
       })
       .unwrap_or_else(|err| {
          error!("Could not list audio file directory: {}", err);
-         BinaryHeap::new()
+         Vec::new()
       })
-      .into_sorted_vec()
 }

@@ -47,6 +47,7 @@ fn rocket() -> _ {
             api::auth::authorize,
             api::auth::login,
             api::auth::logout,
+            api::clips::delete_clip,
             api::clips::get_clips,
             api::clips::play_clip,
             api::guilds::get_admin_guilds,
