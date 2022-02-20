@@ -2,6 +2,7 @@
 extern crate rocket;
 
 mod api;
+mod catcher;
 mod discord_client;
 mod fairing;
 mod middleware;
@@ -56,6 +57,7 @@ fn rocket() -> _ {
          ],
       )
       .mount("/", SPAServer::from(if is_release { "dist" } else { "../ui/dist" }))
+      .register("/", catchers![catcher::default])
       .attach(fairing::Cors)
       .manage(DiscordClient::new(client))
       .manage(Env {
