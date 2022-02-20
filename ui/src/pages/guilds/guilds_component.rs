@@ -5,6 +5,7 @@ use theyrefor_models::Guild;
 
 pub enum Msg {
    Done(Vec<Guild>),
+   Unauthorized,
    Fail,
 }
 
@@ -32,6 +33,7 @@ impl Component for Guilds {
    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
       match msg {
          Msg::Done(guilds) => self.guilds = Some(Ok(guilds)),
+         Msg::Unauthorized => {}
          Msg::Fail => self.guilds = Some(Err(())),
       };
       true
@@ -59,6 +61,7 @@ async fn get_guilds(is_admin: bool) -> Msg {
    };
    match data {
       Ok(Some(guilds)) => Msg::Done(guilds),
-      _ => Msg::Fail,
+      Ok(None) => Msg::Unauthorized,
+      Err(_) => Msg::Fail,
    }
 }
