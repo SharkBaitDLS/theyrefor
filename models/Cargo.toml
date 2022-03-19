@@ -6,3 +6,4 @@ authors = ["Isaac M. Good <imgood@imgoodproductions.org>"]
 
 [dependencies]
 serde = "1.0"
+twilight-model = { version = "0.10", optional = true }

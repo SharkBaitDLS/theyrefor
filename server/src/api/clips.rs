@@ -1,5 +1,6 @@
 use futures::TryFutureExt;
 use rocket::{
+   data::{ByteUnit, Data},
    http::{CookieJar, Status},
    serde::json::Json,
    State,
@@ -43,7 +44,7 @@ pub async fn get_clips(
 
          let user_names = {
             let mut user_names: Vec<String> = client
-               .get_guild_members(&env.bot_token, &guild.id)
+               .get_guild_members(&guild.id)
                .map_ok(|members| members.into_iter().map(|member| member.user.username).collect())
                .await?;
             user_names.sort_unstable_by_key(|name| name.to_lowercase());
@@ -74,7 +75,7 @@ pub async fn delete_clip(
    id: String, name: String, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<DiscordClient>,
 ) -> ApiResponse<()> {
    let token = auth::get_auth_token(env, cookies, client).await?;
-   let guilds = guilds::get_mutual_guilds(&token, env, client).await?;
+   let guilds = guilds::get_mutual_guilds(&token, client).await?;
    let user_id = user::get_current_user_id(&token, client).await?;
 
    let guild = guilds
@@ -97,6 +98,44 @@ pub async fn delete_clip(
             Err((Status::BadRequest, String::new()))
          } else {
             fs::remove_file(path).map_err(|_| (Status::InternalServerError, String::new()))
+         }
+      }
+   }
+}
+
+#[put("/clips/<id>/<name>", data = "<clip>")]
+pub async fn upload_clip(
+   id: String, name: String, clip: Data<'_>, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<DiscordClient>,
+) -> ApiResponse<()> {
+   let token = auth::get_auth_token(env, cookies, client).await?;
+   let guilds = guilds::get_mutual_guilds(&token, client).await?;
+   let user_id = user::get_current_user_id(&token, client).await?;
+
+   let guild = guilds
+      .into_iter()
+      .find(|guild| guild.id == id)
+      .ok_or((Status::Forbidden, String::new()))?;
+
+   match guilds::take_guild_if_admin(env, client, guild, &user_id).await {
+      None => Err((Status::Forbidden, String::new())),
+      Some(_) => {
+         let mut path: PathBuf = [&env.clip_directory, &id].into_iter().collect();
+         path.push(format!("{}.mp3", name));
+
+         // Security: don't allow directory traversal attacks
+         if path
+            .components()
+            .into_iter()
+            .any(|component| component == Component::ParentDir)
+         {
+            Err((Status::BadRequest, String::new()))
+         } else {
+            clip
+               .open(ByteUnit::Megabyte(50))
+               .into_file(path)
+               .await
+               .map(|_| {})
+               .map_err(|_| (Status::InternalServerError, String::new()))
          }
       }
    }

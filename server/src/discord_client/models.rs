@@ -1,5 +1,9 @@
 use serde::Deserialize;
 use theyrefor_models::Guild;
+use twilight_model::{
+   guild::Member,
+   user::{CurrentUserGuild, User},
+};
 
 #[derive(Deserialize)]
 pub struct DiscordAuthResponse {
@@ -30,12 +34,40 @@ pub struct DiscordGuildUser {
 impl From<DiscordGuild> for Guild {
    fn from(val: DiscordGuild) -> Self {
       Guild {
-         name: val.name.clone(),
-         id: val.id.clone(),
-         icon: val
-            .icon
-            .as_ref()
-            .map(|icon| format!("https://cdn.discordapp.com/icons/{}/{}.png", val.id, icon)),
+         name: val.name,
+         id: val.id,
+         icon: val.icon,
+      }
+   }
+}
+
+impl From<CurrentUserGuild> for DiscordGuild {
+   fn from(current_user_guild: CurrentUserGuild) -> Self {
+      DiscordGuild {
+         name: current_user_guild.name,
+         id: current_user_guild.id.to_string(),
+         icon: current_user_guild.icon.map(|icon| {
+            format!(
+               "https://cdn.discordapp.com/icons/{}/{}.png",
+               current_user_guild.id, icon
+            )
+         }),
+         owner: current_user_guild.owner,
+      }
+   }
+}
+
+impl From<User> for DiscordGuildUser {
+   fn from(user: User) -> Self {
+      DiscordGuildUser { username: user.name }
+   }
+}
+
+impl From<Member> for DiscordGuildMember {
+   fn from(member: Member) -> Self {
+      DiscordGuildMember {
+         user: member.user.into(),
+         roles: member.roles.into_iter().map(|role| role.to_string()).collect(),
       }
    }
 }

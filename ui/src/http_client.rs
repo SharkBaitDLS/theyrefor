@@ -6,6 +6,7 @@ use reqwasm::{
 };
 use serde::de::DeserializeOwned;
 use url::Url;
+use wasm_bindgen::JsValue;
 
 use theyrefor_models::AuthState;
 
@@ -29,6 +30,22 @@ where
    match Request::get(uri).send().await {
       Ok(response) if response.status() == StatusCode::UNAUTHORIZED => update_redirect(response).await,
       Ok(response) if response.status() == StatusCode::OK => response.json().await.map_err(|err| err.into()),
+      Ok(response) if response.status() == StatusCode::NOT_FOUND => Ok(None),
+      Ok(response) => {
+         error!("Unexpected response: {:?}", response.status());
+         Err(ClientError::Status(response.status()))
+      }
+      Err(err) => {
+         error!("{:?}", err);
+         Err(err.into())
+      }
+   }
+}
+
+pub async fn put_with_auth<V: Into<JsValue>>(uri: &str, body: V) -> Result<Option<()>, ClientError> {
+   match Request::put(uri).body(body).send().await {
+      Ok(response) if response.status() == StatusCode::UNAUTHORIZED => update_redirect(response).await,
+      Ok(response) if response.status() == StatusCode::OK => Ok(Some(())),
       Ok(response) if response.status() == StatusCode::NOT_FOUND => Ok(None),
       Ok(response) => {
          error!("Unexpected response: {:?}", response.status());

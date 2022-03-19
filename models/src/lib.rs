@@ -1,4 +1,8 @@
+mod user;
+
 use serde::{Deserialize, Serialize};
+
+pub use user::User;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AuthState {
@@ -19,11 +23,4 @@ pub struct GuildClips {
    pub user_clip_names: Vec<String>,
    pub user_names: Vec<String>,
    pub guild_name: String,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct User {
-   pub username: String,
-   pub id: String,
-   pub avatar: Option<String>,
 }

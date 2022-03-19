@@ -1,8 +1,10 @@
+use web_sys::File;
 use yew::{Component, Context, Html, Properties};
 
 use theyrefor_models::GuildClips;
 
 use crate::http_client;
+
 #[derive(Clone, Debug, Eq, PartialEq, Properties)]
 pub struct Props {
    pub guild_id: String,
@@ -14,9 +16,19 @@ pub enum DeleteMsg {
    Success,
    Fail(String),
 }
+
+pub enum UploadMsg {
+   File(File, String, Box<UploadMsg>),
+   ClipSuccess(String),
+   UserSuccess(String),
+   Cancel,
+   Fail(String),
+}
+
 pub enum Msg {
    Data(super::Msg),
    Delete(DeleteMsg),
+   Upload(UploadMsg),
 }
 impl From<super::Msg> for Msg {
    fn from(message: super::Msg) -> Self {
@@ -28,10 +40,16 @@ impl From<DeleteMsg> for Msg {
       Msg::Delete(message)
    }
 }
+impl From<UploadMsg> for Msg {
+   fn from(message: UploadMsg) -> Self {
+      Msg::Upload(message)
+   }
+}
 
 pub struct Admin {
    pub(super) data: Option<Result<GuildClips, ()>>,
    pub(super) to_delete: Option<Result<String, String>>,
+   pub(super) upload: Option<Result<String, String>>,
    guild_id: String,
 }
 
@@ -45,6 +63,7 @@ impl Component for Admin {
       Self {
          data: None,
          to_delete: None,
+         upload: None,
          guild_id: ctx.props().guild_id.clone(),
       }
    }
@@ -74,6 +93,32 @@ impl Component for Admin {
                }
             }
          },
+         Msg::Upload(upload) => match upload {
+            UploadMsg::File(file, name, success_msg) => {
+               self.upload = Some(Ok(name.clone()));
+               ctx.link()
+                  .send_future(upload_clip(self.guild_id.clone(), name, file, *success_msg));
+            }
+            UploadMsg::Cancel => {
+               self.upload = None;
+            }
+            UploadMsg::UserSuccess(name) => {
+               if let Some(Ok(data)) = &mut self.data {
+                  let user_clips = &mut data.user_clip_names;
+                  user_clips.push(name);
+                  self.upload = None;
+               }
+            }
+            UploadMsg::ClipSuccess(name) => {
+               if let Some(Ok(data)) = &mut self.data {
+                  let clip_names = &mut data.clip_names;
+                  clip_names.push(name);
+                  clip_names.sort_unstable_by_key(|clip| clip.to_lowercase());
+                  self.upload = None;
+               }
+            }
+            UploadMsg::Fail(name) => self.upload = Some(Err(name)),
+         },
       };
       true
    }
@@ -90,6 +135,13 @@ impl Component for Admin {
 
    fn view(&self, ctx: &Context<Self>) -> Html {
       self.render(ctx)
+   }
+}
+
+async fn upload_clip(guild_id: String, name: String, clip: File, success_msg: UploadMsg) -> UploadMsg {
+   match http_client::put_with_auth(&format!("/api/clips/{}/{}", guild_id, name), clip).await {
+      Ok(_) => success_msg,
+      Err(_) => UploadMsg::Fail(name),
    }
 }
 

@@ -15,17 +15,6 @@ pub async fn get_user(env: &State<Env>, cookies: &CookieJar<'_>, client: &State<
       .map_err(|_| ()) // deliberately swallow the redirect and just 404 instead
       .and_then(|token| client.get_current_user(token).map_err(|_| ()))
       .await
-      .map(|user| match user.avatar {
-         Some(_) => {
-            let mut user = user;
-            user.avatar = Some(format!(
-               "https://cdn.discordapp.com/avatars/{}/{}.png",
-               user.id.clone(),
-               user.avatar.unwrap()
-            ));
-            Json(user)
-         }
-         None => Json(user),
-      })
+      .map(Json)
       .ok()
 }

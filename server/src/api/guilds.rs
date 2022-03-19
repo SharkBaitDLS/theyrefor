@@ -20,7 +20,7 @@ pub async fn get_guilds(
    env: &State<Env>, cookies: &CookieJar<'_>, client: &State<DiscordClient>,
 ) -> ApiResponse<Json<Vec<Guild>>> {
    auth::get_auth_token(env, cookies, client)
-      .and_then(|token| async move { get_mutual_guilds(token, env, client).await })
+      .and_then(|token| async move { get_mutual_guilds(token, client).await })
       .await
       .map(|guilds| Json(guilds.into_iter().map(|guild| guild.into()).collect()))
 }
@@ -30,7 +30,7 @@ pub async fn get_admin_guilds(
    env: &State<Env>, cookies: &CookieJar<'_>, client: &State<DiscordClient>,
 ) -> ApiResponse<Json<Vec<Guild>>> {
    let token = auth::get_auth_token(env, cookies, client).await?;
-   let guilds = get_mutual_guilds(&token, env, client).await?;
+   let guilds = get_mutual_guilds(&token, client).await?;
    let user_id = user::get_current_user_id(&token, client).await?;
 
    let admin_guilds = stream::iter(guilds)
@@ -42,11 +42,9 @@ pub async fn get_admin_guilds(
    Ok(Json(admin_guilds))
 }
 
-pub async fn get_mutual_guilds(
-   token: impl Display, env: &State<Env>, client: &State<DiscordClient>,
-) -> ApiResponse<Vec<DiscordGuild>> {
+pub async fn get_mutual_guilds(token: impl Display, client: &State<DiscordClient>) -> ApiResponse<Vec<DiscordGuild>> {
    let guilds = client.get_user_guilds(token).await?;
-   let bot_guilds = client.get_bot_guilds(&env.bot_token).await?;
+   let bot_guilds = client.get_bot_guilds().await?;
 
    Ok(guilds.into_iter().filter(|guild| bot_guilds.contains(guild)).collect())
 }
@@ -57,7 +55,7 @@ pub async fn take_guild_if_admin(
    if guild.owner {
       Some(guild)
    } else {
-      match client.get_guild_user_roles(&env.bot_token, &guild.id, user_id).await {
+      match client.get_guild_user_roles(&guild.id, user_id).await {
          Ok(roles) => {
             let path: PathBuf = [&env.clip_directory, &guild.id, ".role_id"].iter().collect();
 
