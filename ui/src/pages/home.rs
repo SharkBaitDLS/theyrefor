@@ -36,14 +36,10 @@ impl Component for Home {
                   <div class="tile is-child box">
                      <p class="title">{ "Server Admins" }</p>
                      <div class="content">
-                        <article class="message is-info block">
-                           <div class="message-header">
-                              <p>{ "Coming Soon!" }</p>
-                           </div>
-                           <div class="message-body">
-                              { "This feature will be available at a later date." }
-                           </div>
-                        </article>
+                        { "If you are an admin of a server or have been given a role that grants access to
+                           administer the bot, you can use the Manage Servers page to upload, preview, or
+                           delete user entrance sounds or soundboard clips."
+                        }
                      </div>
                   </div>
                </div>

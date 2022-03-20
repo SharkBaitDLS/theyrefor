@@ -71,15 +71,11 @@ impl super::Admin {
                                        if response.user_clip_names.contains(name) {
                                           html! {
                                              <td>
-                                                <button class="ml-auto button is-small is-primary"
-                                                   onclick={
-                                                      clips::preview_callback()
-                                                   }>
-                                                   <audio controls=false preload="none">
-                                                      <source type="audio/mpeg" src={
-                                                         format!("/api/audio/{}/{}", ctx.props().guild_id, name)
-                                                      }/>
-                                                   </audio>
+                                                <button class="ml-auto button is-small is-primary" onclick={
+                                                   clips::preview_callback()
+                                                }>
+                                                   <audio controls=false preload="none"
+                                                      src={format!("/api/audio/{}/{}", ctx.props().guild_id, name)} />
                                                    <i class="fa-solid fa-headphones fa-fw"/>
                                                 </button>
                                                 <button class="ml-1 button is-small is-danger" onclick={
@@ -166,10 +162,8 @@ impl super::Admin {
                                        <button class="ml-auto button is-small is-primary" onclick={
                                           clips::preview_callback()
                                        }>
-                                          <audio controls=false preload="none">
-                                             <source src={format!("/api/audio/{}/{}", ctx.props().guild_id, name)}
-                                                   type="audio/mpeg"/>
-                                          </audio>
+                                          <audio controls=false preload="none"
+                                             src={format!("/api/audio/{}/{}.mp3", ctx.props().guild_id, name)} />
                                           <i class="fa-solid fa-headphones fa-fw"/>
                                        </button>
                                        <button class="ml-1 button is-small is-danger" onclick={

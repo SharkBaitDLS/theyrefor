@@ -48,10 +48,8 @@ impl super::Soundboard {
                                     <button class="ml-auto button is-small is-primary" onclick={
                                        clips::preview_callback()
                                     }>
-                                       <audio controls=false preload="none">
-                                          <source src={format!("/api/audio/{}/{}", ctx.props().guild_id, name)}
-                                                  type="audio/mpeg"/>
-                                       </audio>
+                                       <audio controls=false preload="none"
+                                          src={format!("/api/audio/{}/{}.mp3", ctx.props().guild_id, name)} />
                                        <i class="fa-solid fa-headphones fa-fw"/>
                                     </button>
                                     <button class="button is-small ml-1 is-link" onclick={
@@ -80,10 +78,8 @@ impl super::Soundboard {
                                     <button class="ml-auto button is-small is-primary" onclick={
                                        clips::preview_callback()
                                     }>
-                                       <audio controls=false preload="none">
-                                          <source src={format!("/api/audio/{}/{}", ctx.props().guild_id, name)}
-                                                  type="audio/mpeg"/>
-                                       </audio>
+                                       <audio controls=false preload="none"
+                                          src={format!("/api/audio/{}/{}.mp3", ctx.props().guild_id, name)} />
                                        <i class="fa-solid fa-headphones fa-fw"/>
                                     </button>
                                     <button class="button is-small ml-1 is-link" onclick={

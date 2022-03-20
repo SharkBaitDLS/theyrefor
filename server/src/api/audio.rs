@@ -28,7 +28,7 @@ pub async fn get_clip(
 
          let guild_dir = String::from(&env.clip_directory) + "/" + &guild.id;
          let mut path = PathBuf::from(guild_dir);
-         path.push(format!("{}.mp3", name.to_lowercase()));
+         path.push(&name.to_lowercase());
 
          // Security: don't allow directory traversal attacks
          if path

@@ -119,9 +119,9 @@ impl Model {
                            <Link<Route> classes="navbar-item" to={Route::Clips}>
                               { "Clips" }
                            </Link<Route>>
-                           // <Link<Route> classes="navbar-item" to=AppRoute::Servers>
-                           //    { "Manage Servers" }
-                           // </Link<Route>>
+                           <Link<Route> classes="navbar-item" to={Route::Servers}>
+                              { "Manage Servers" }
+                           </Link<Route>>
                         </div>
                      }
                   } else {
