@@ -81,18 +81,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "anyhow"
-version = "1.0.56"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4361135be9122e0870de935d7c439aef945b9f9ddd4199a553b5270b49c82a27"
-
-[[package]]
-name = "anymap"
-version = "0.12.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "33954243bd79057c2de7338850b85983a44588021f8a5fee574a8888c6de4344"
-
-[[package]]
 name = "async-io"
 version = "1.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -319,12 +307,6 @@ name = "cfg-if"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
-
-[[package]]
-name = "cfg-match"
-version = "0.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8100e46ff92eb85bf6dc2930c73f2a4f7176393c84a9446b3d501e1b354e7b34"
 
 [[package]]
 name = "cipher"
@@ -761,18 +743,6 @@ checksum = "9b919933a397b79c37e33b77bb2aa3dc8eb6e165ad809e58ff75bc7db2e34574"
 
 [[package]]
 name = "gloo"
-version = "0.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "68ce6f2dfa9f57f15b848efa2aade5e1850dc72986b87a2b0752d44ca08f4967"
-dependencies = [
- "gloo-console-timer",
- "gloo-events",
- "gloo-file 0.1.0",
- "gloo-timers",
-]
-
-[[package]]
-name = "gloo"
 version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "23947965eee55e3e97a5cd142dd4c10631cc349b48cecca0ed230fd296f568cd"
@@ -780,7 +750,7 @@ dependencies = [
  "gloo-console",
  "gloo-dialogs",
  "gloo-events",
- "gloo-file 0.2.1",
+ "gloo-file",
  "gloo-render",
  "gloo-storage",
  "gloo-timers",
@@ -800,15 +770,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "gloo-console-timer"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b48675544b29ac03402c6dffc31a912f716e38d19f7e74b78b7e900ec3c941ea"
-dependencies = [
- "web-sys",
-]
-
-[[package]]
 name = "gloo-dialogs"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -824,18 +785,6 @@ version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "088514ec8ef284891c762c88a66b639b3a730134714692ee31829765c5bc814f"
 dependencies = [
- "wasm-bindgen",
- "web-sys",
-]
-
-[[package]]
-name = "gloo-file"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8f9fecfe46b5dc3cc46f58e98ba580cc714f2c93860796d002eb3527a465ef49"
-dependencies = [
- "gloo-events",
- "js-sys",
  "wasm-bindgen",
  "web-sys",
 ]
@@ -1222,16 +1171,6 @@ name = "mime"
 version = "0.3.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2a60c7ce501c71e03a9c9c0d35b861413ae925bd979cc7a4e30d060069aaac8d"
-
-[[package]]
-name = "mime_guess"
-version = "2.0.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4192263c238a5f0d0c6bfd21f336a313a4ce1c450542449ca191bb657b4642ef"
-dependencies = [
- "mime",
- "unicase",
-]
 
 [[package]]
 name = "mio"
@@ -1780,7 +1719,6 @@ dependencies = [
  "lazy_static",
  "log",
  "mime",
- "mime_guess",
  "native-tls",
  "percent-encoding",
  "pin-project-lite",
@@ -1794,22 +1732,6 @@ dependencies = [
  "wasm-bindgen-futures",
  "web-sys",
  "winreg",
-]
-
-[[package]]
-name = "reqwest-middleware"
-version = "0.1.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3b58621b8223cfc85b63d38b8d335c69b96a666d9b7561aa30a3b070ce1df31c"
-dependencies = [
- "anyhow",
- "async-trait",
- "futures",
- "http",
- "reqwest",
- "serde",
- "task-local-extensions",
- "thiserror",
 ]
 
 [[package]]
@@ -2358,15 +2280,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7b2093cf4c8eb1e67749a6762251bc9cd836b6fc171623bd0a9d324d37af2417"
 
 [[package]]
-name = "task-local-extensions"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "36794203e10c86e5998179e260869d156e0674f02d5451b4a3fb9fd86d02aaab"
-dependencies = [
- "tokio",
-]
-
-[[package]]
 name = "tempfile"
 version = "3.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2402,13 +2315,11 @@ dependencies = [
  "moka",
  "rand",
  "reqwest",
- "reqwest-middleware",
  "rocket",
  "serde",
  "serde_json",
  "serde_millis",
  "serde_urlencoded",
- "task-local-extensions",
  "theyrefor-models",
  "twilight-http",
  "twilight-model",
@@ -2432,9 +2343,8 @@ dependencies = [
  "wasm-bindgen-futures",
  "wasm-logger",
  "web-sys",
- "yew 0.19.3",
+ "yew",
  "yew-router",
- "yewtil",
 ]
 
 [[package]]
@@ -3107,40 +3017,12 @@ checksum = "9fc79f4a1e39857fc00c3f662cbf2651c771f00e9c15fe2abc341806bd46bd71"
 
 [[package]]
 name = "yew"
-version = "0.18.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e4d5154faef86dddd2eb333d4755ea5643787d20aca683e58759b0e53351409f"
-dependencies = [
- "anyhow",
- "anymap",
- "bincode",
- "cfg-if 1.0.0",
- "cfg-match",
- "console_error_panic_hook",
- "gloo 0.2.1",
- "http",
- "indexmap",
- "js-sys",
- "log",
- "ryu",
- "serde",
- "serde_json",
- "slab",
- "thiserror",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "web-sys",
- "yew-macro 0.18.0",
-]
-
-[[package]]
-name = "yew"
 version = "0.19.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2a1ccb53e57d3f7d847338cf5758befa811cabe207df07f543c06f502f9998cd"
 dependencies = [
  "console_error_panic_hook",
- "gloo 0.4.2",
+ "gloo",
  "gloo-utils",
  "indexmap",
  "js-sys",
@@ -3149,20 +3031,7 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
- "yew-macro 0.19.3",
-]
-
-[[package]]
-name = "yew-macro"
-version = "0.18.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d6e23bfe3dc3933fbe9592d149c9985f3047d08c637a884b9344c21e56e092ef"
-dependencies = [
- "boolinator",
- "lazy_static",
- "proc-macro2",
- "quote",
- "syn",
+ "yew-macro",
 ]
 
 [[package]]
@@ -3185,7 +3054,7 @@ version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "155804f6f3aa309f596d5c3fa14486a94e7756f1edd7634569949e401d5099f2"
 dependencies = [
- "gloo 0.4.2",
+ "gloo",
  "gloo-utils",
  "js-sys",
  "route-recognizer",
@@ -3195,7 +3064,7 @@ dependencies = [
  "thiserror",
  "wasm-bindgen",
  "web-sys",
- "yew 0.19.3",
+ "yew",
  "yew-router-macro",
 ]
 
@@ -3208,17 +3077,4 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
-]
-
-[[package]]
-name = "yewtil"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8543663ac49cd613df079282a1d8bdbdebdad6e02bac229f870fd4237b5d9aaa"
-dependencies = [
- "log",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "web-sys",
- "yew 0.18.0",
 ]
