@@ -46,7 +46,10 @@ pub async fn get_mutual_guilds(token: impl Display, client: &State<DiscordClient
    let guilds = client.get_user_guilds(token).await?;
    let bot_guilds = client.get_bot_guilds().await?;
 
-   Ok(guilds.into_iter().filter(|guild| bot_guilds.contains(guild)).collect())
+   Ok(guilds
+      .into_iter()
+      .filter(|guild| bot_guilds.iter().any(|bot_guild| bot_guild.id == guild.id))
+      .collect())
 }
 
 pub async fn take_guild_if_admin(
