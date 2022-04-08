@@ -50,12 +50,13 @@ impl super::Admin {
                      </div>
                   </div>
                </div>
-               <div class="is-flex is-flex-direction-row is-justify-content-center is-flex-wrap-wrap">
-                  <div class="m-3 is-flex is-flex-direction-column is-justify-content-flex-start">
+               <div class="columns mb-3">
+                  <div class="column is-one-fifth"/>
+                  <div class="column is-flex is-flex-direction-column is-justify-content-flex-start mx-2">
                      <div class="mb-1 is-size-5 has-text-centered">
                         { format!("User Entrance Clips for {}", response.guild_name) }
                      </div>
-                     <table class="table is-bordered is-striped">
+                     <table class="table is-bordered is-striped tracklist-table">
                         <thead>
                            <tr>
                               <th>{ "User Name" }</th>
@@ -116,11 +117,11 @@ impl super::Admin {
                         </tbody>
                      </table>
                   </div>
-                  <div class="m-3 is-flex is-flex-direction-column is-justify-content-flex-start">
+                  <div class="column is-flex is-flex-direction-column is-justify-content-flex-start mx-2">
                      <div class="mb-1 is-size-5 has-text-centered">
                         { format!("Soundboard Clips for {}", response.guild_name) }
                      </div>
-                     <table class="table is-bordered is-striped">
+                     <table class="table is-bordered is-striped tracklist-table">
                         <thead>
                            <tr>
                               <th>{ "Name" }</th>
@@ -178,6 +179,7 @@ impl super::Admin {
                         </tbody>
                      </table>
                   </div>
+                  <div class="column is-one-fifth"/>
                </div>
                {
                   match &self.to_delete {

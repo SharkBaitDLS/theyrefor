@@ -25,6 +25,21 @@ button {
   text-overflow: ellipsis;
 }
 
+// Admin clip table
+.tracklist-table {
+  td:last-child {
+    white-space: nowrap;
+  }
+
+  td:first-child {
+    max-width: 1px;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
 .floating-message {
   position: fixed;
   left: 50%;
