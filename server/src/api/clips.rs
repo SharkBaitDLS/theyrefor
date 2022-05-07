@@ -87,7 +87,7 @@ pub async fn delete_clip(
       None => Err((Status::Forbidden, String::new())),
       Some(_) => {
          let mut path: PathBuf = [&env.clip_directory, &id].into_iter().collect();
-         path.push(format!("{}.mp3", name));
+         path.push(format!("{}.mp3", name.to_lowercase()));
 
          // Security: don't allow directory traversal attacks
          if path
@@ -120,7 +120,7 @@ pub async fn upload_clip(
       None => Err((Status::Forbidden, String::new())),
       Some(_) => {
          let mut path: PathBuf = [&env.clip_directory, &id].into_iter().collect();
-         path.push(format!("{}.mp3", name));
+         path.push(format!("{}.mp3", name.to_lowercase()));
 
          // Security: don't allow directory traversal attacks
          if path
