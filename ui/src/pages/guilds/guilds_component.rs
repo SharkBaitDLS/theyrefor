@@ -9,7 +9,7 @@ pub enum Msg {
    Fail,
 }
 
-#[derive(Clone, PartialEq, Properties)]
+#[derive(Clone, PartialEq, Eq, Properties)]
 pub struct Props {
    #[prop_or_default]
    pub admin: bool,
@@ -39,7 +39,7 @@ impl Component for Guilds {
       true
    }
 
-   fn changed(&mut self, ctx: &Context<Self>) -> bool {
+   fn changed(&mut self, ctx: &Context<Self>, _old_props: &Self::Properties) -> bool {
       if ctx.props().admin != self.is_admin {
          self.is_admin = ctx.props().admin;
          self.guilds = None;

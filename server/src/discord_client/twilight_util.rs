@@ -22,7 +22,7 @@ pub async fn marshal<T: Into<O> + DeserializeOwned + Unpin, O>(result: Result<Re
          let status = body.status();
          let text = body.text().await.map_err(internal_server_error)?;
          error!("Failed request: {}", text);
-         Err((Status::new(status.raw()), String::new()))
+         Err((Status::new(status.get()), String::new()))
       }
       Err(err) => Err(internal_server_error(err)),
    }
@@ -41,7 +41,7 @@ pub async fn marshal_list<T: Into<O> + DeserializeOwned + Unpin, O>(
          let status = body.status();
          let text = body.text().await.map_err(internal_server_error)?;
          error!("Failed request: {}", text);
-         Err((Status::new(status.raw()), String::new()))
+         Err((Status::new(status.get()), String::new()))
       }
       Err(err) => Err(internal_server_error(err)),
    }
@@ -58,7 +58,7 @@ pub async fn marshal_member<O: From<Member>>(result: Result<Response<MemberBody>
          let status = body.status();
          let text = body.text().await.map_err(internal_server_error)?;
          error!("Failed request: {}", text);
-         Err((Status::new(status.raw()), String::new()))
+         Err((Status::new(status.get()), String::new()))
       }
       Err(err) => Err(internal_server_error(err)),
    }
@@ -75,7 +75,7 @@ pub async fn marshal_members<O: From<Member>>(result: Result<Response<MemberList
          let status = body.status();
          let text = body.text().await.map_err(internal_server_error)?;
          error!("Failed request: {}", text);
-         Err((Status::new(status.raw()), String::new()))
+         Err((Status::new(status.get()), String::new()))
       }
       Err(err) => Err(internal_server_error(err)),
    }

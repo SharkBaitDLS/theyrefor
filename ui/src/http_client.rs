@@ -110,7 +110,7 @@ async fn update_redirect<T>(response: Response) -> Result<Option<T>, ClientError
    url.set_query(None);
    url.query_pairs_mut()
       .extend_pairs(remainder)
-      .append_pair(STATE_PARAM, &base64::encode(&bincode::serialize(&auth_state).unwrap()));
+      .append_pair(STATE_PARAM, &base64::encode(bincode::serialize(&auth_state).unwrap()));
 
    location
       .set_href(url.as_str())
