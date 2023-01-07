@@ -7,7 +7,7 @@ use http::{header, HeaderMap, HeaderValue};
 use moka::future::Cache;
 use rocket::http::Status;
 use serde::Serialize;
-use std::{fmt::Display, str::FromStr, sync::Arc, time::Duration};
+use std::{fmt::Display, future::IntoFuture, str::FromStr, sync::Arc, time::Duration};
 use twilight_http::{client::ClientBuilder, Client};
 use twilight_model::id::Id;
 
@@ -62,7 +62,7 @@ impl DiscordClient {
          .get_user_client(token)
          .await
          .current_user()
-         .exec()
+         .into_future()
          .then(twilight_util::marshal)
          .await
    }
@@ -72,7 +72,7 @@ impl DiscordClient {
          .get_user_client(token)
          .await
          .current_user_guilds()
-         .exec()
+         .into_future()
          .then(twilight_util::marshal_list)
          .await
    }
@@ -84,7 +84,7 @@ impl DiscordClient {
          .guild_members(Id::from_str(guild_id).unwrap())
          .limit(1_000)
          .unwrap()
-         .exec()
+         .into_future()
          .then(twilight_util::marshal_members)
          .await
    }
@@ -94,7 +94,7 @@ impl DiscordClient {
          .get_bot_client()
          .await
          .guild_member(Id::from_str(guild_id).unwrap(), Id::from_str(user_id).unwrap())
-         .exec()
+         .into_future()
          .then(twilight_util::marshal_member::<DiscordGuildMember>)
          .map_ok(|member| member.roles)
          .await
@@ -105,7 +105,7 @@ impl DiscordClient {
          .get_bot_client()
          .await
          .current_user_guilds()
-         .exec()
+         .into_future()
          .then(twilight_util::marshal_list)
          .await
    }
@@ -130,7 +130,7 @@ impl DiscordClient {
    async fn get_or_insert_client<T: Display>(&self, token: T, is_bot: bool) -> Arc<Client> {
       self
          .user_clients
-         .get_or_insert_with(token.to_string(), async {
+         .get_with(token.to_string(), async {
             let mut headers = HeaderMap::new();
             headers.insert(header::USER_AGENT, HeaderValue::from_static(USER_AGENT));
 
