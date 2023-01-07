@@ -10,10 +10,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
+          targets: wasm32-unknown-unknown
           components: clippy, rustfmt
+      - uses: jetli/trunk-action@v0.1.0
       - name: Cache registry
         uses: actions/cache@v1
         with:
@@ -35,3 +36,5 @@ jobs:
         run: cargo clippy -- -D warnings --no-deps
       - name: Test
         run: cargo test
+      - name: Webpack
+        run: trunk build --release ui/index.html
