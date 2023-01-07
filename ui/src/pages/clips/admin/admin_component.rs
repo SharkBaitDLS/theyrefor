@@ -123,7 +123,7 @@ impl Component for Admin {
       true
    }
 
-   fn changed(&mut self, ctx: &Context<Self>) -> bool {
+   fn changed(&mut self, ctx: &Context<Self>, _old_props: &Self::Properties) -> bool {
       if ctx.props().guild_id != self.guild_id {
          self.guild_id = ctx.props().guild_id.clone();
          ctx.link().send_future(super::get_clips(ctx.props().guild_id.clone()));

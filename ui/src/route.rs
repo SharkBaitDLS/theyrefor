@@ -1,6 +1,6 @@
 use yew_router::Routable;
 
-#[derive(Clone, Debug, PartialEq, Routable)]
+#[derive(Clone, Debug, PartialEq, Eq, Routable)]
 pub enum Route {
    #[at("/clips/:guild_id")]
    Soundboard { guild_id: String },

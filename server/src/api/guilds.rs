@@ -63,7 +63,7 @@ pub async fn take_guild_if_admin(
             let path: PathBuf = [&env.clip_directory, &guild.id, ".role_id"].iter().collect();
 
             let mut admin_role_data = String::new();
-            if let Err(err) = File::open(&path).map(|mut file| file.read_to_string(&mut admin_role_data)) {
+            if let Err(err) = File::open(path).map(|mut file| file.read_to_string(&mut admin_role_data)) {
                if err.kind() != ErrorKind::NotFound {
                   error!("Could not retrieve role ID for guild {:?}: {:?}", guild.id, err);
                }

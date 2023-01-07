@@ -70,7 +70,7 @@ impl Component for Model {
                { self.view_nav(ctx) }
 
                <main>
-                  <Switch<Route> render={Switch::render(switch)} />
+                  <Switch<Route> render={self::switch} />
                </main>
                <div class="is-flex-grow-1"/>
                <footer class="footer mt-auto">
@@ -178,8 +178,8 @@ impl Model {
    }
 }
 
-fn switch(route: &Route) -> Html {
-   match route.clone() {
+fn switch(route: Route) -> Html {
+   match route {
       Route::Soundboard { guild_id: id } => {
          html! { <Soundboard guild_id={id} /> }
       }
@@ -203,5 +203,5 @@ fn switch(route: &Route) -> Html {
 
 fn main() {
    wasm_logger::init(wasm_logger::Config::new(log::Level::Trace));
-   yew::start_app::<Model>();
+   yew::Renderer::<Model>::new().render();
 }

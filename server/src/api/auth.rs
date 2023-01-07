@@ -1,3 +1,5 @@
+// Can be removed when: https://github.com/SergioBenitez/Rocket/issues/2350 is closed
+#![allow(clippy::let_unit_value)]
 use futures::TryFutureExt;
 use rand::{distributions::Alphanumeric, Rng};
 use rocket::{
