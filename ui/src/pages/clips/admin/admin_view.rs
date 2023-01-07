@@ -76,7 +76,7 @@ impl super::Admin {
                                                    clips::preview_callback()
                                                 }>
                                                    <audio controls=false preload="none"
-                                                      src={format!("/api/audio/{}/{}", ctx.props().guild_id, name)} />
+                                                      src={format!("/api/audio/{}/{}.mp3", ctx.props().guild_id, name)} />
                                                    <i class="fa-solid fa-headphones fa-fw"/>
                                                 </button>
                                                 <button class="ml-1 button is-small is-danger" onclick={
