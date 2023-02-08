@@ -79,7 +79,7 @@ impl Component for Soundboard {
 }
 
 async fn play_clip(guild_id: String, name: String) -> PlaybackMsg {
-   match http_client::post_with_auth(&format!("/api/clips/{}/{}", guild_id, name)).await {
+   match http_client::post_with_auth(&format!("/api/clips/{guild_id}/{name}")).await {
       Ok(Some(())) => PlaybackMsg::Success,
       _ => PlaybackMsg::Fail,
    }

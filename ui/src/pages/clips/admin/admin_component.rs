@@ -139,14 +139,14 @@ impl Component for Admin {
 }
 
 async fn upload_clip(guild_id: String, name: String, clip: File, success_msg: UploadMsg) -> UploadMsg {
-   match http_client::put_with_auth(&format!("/api/clips/{}/{}", guild_id, name), clip).await {
+   match http_client::put_with_auth(&format!("/api/clips/{guild_id}/{name}"), clip).await {
       Ok(_) => success_msg,
       Err(_) => UploadMsg::Fail(name),
    }
 }
 
 async fn delete_clip(guild_id: String, name: String) -> DeleteMsg {
-   match http_client::delete_with_auth(&format!("/api/clips/{}/{}", guild_id, name)).await {
+   match http_client::delete_with_auth(&format!("/api/clips/{guild_id}/{name}")).await {
       Ok(_) => DeleteMsg::Success,
       Err(_) => DeleteMsg::Fail(name),
    }

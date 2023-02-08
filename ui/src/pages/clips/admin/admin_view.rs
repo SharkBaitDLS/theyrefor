@@ -76,7 +76,7 @@ impl super::Admin {
                                                    clips::preview_callback()
                                                 }>
                                                    <audio controls=false preload="none"
-                                                      src={format!("/api/audio/{}/{}.mp3", ctx.props().guild_id, name)} />
+                                                      src={format!("/api/audio/{}/{name}.mp3", ctx.props().guild_id)} />
                                                    <i class="fa-solid fa-headphones fa-fw"/>
                                                 </button>
                                                 <button class="ml-1 button is-small is-danger" onclick={
@@ -164,7 +164,7 @@ impl super::Admin {
                                           clips::preview_callback()
                                        }>
                                           <audio controls=false preload="none"
-                                             src={format!("/api/audio/{}/{}.mp3", ctx.props().guild_id, name)} />
+                                             src={format!("/api/audio/{}/{name}.mp3", ctx.props().guild_id)} />
                                           <i class="fa-solid fa-headphones fa-fw"/>
                                        </button>
                                        <button class="ml-1 button is-small is-danger" onclick={
@@ -192,7 +192,7 @@ impl super::Admin {
                               }></button>
                            </div>
                            <div class="message-body is-flex is-flex-direction-column is-justify-content-center">
-                              {format!("Are you sure you want to delete {}?", name)}
+                              {format!("Are you sure you want to delete {name}?")}
                               <button class="button is-danger mt-2" onclick={
                                  ctx.link().callback(|_| DeleteMsg::Confirm)
                               }>
@@ -210,7 +210,7 @@ impl super::Admin {
                               }></button>
                            </div>
                            <div class="message-body is-flex is-flex-direction-column is-justify-content-center">
-                              {format!("Failed to delete {}.", name)}
+                              {format!("Failed to delete {name}.")}
                            </div>
                         </article>
                      },
@@ -228,7 +228,7 @@ impl super::Admin {
                               }></button>
                            </div>
                            <div class="message-body is-flex is-flex-direction-column is-justify-content-center">
-                              {format!("Failed to upload {}.", name)}
+                              {format!("Failed to upload {name}.")}
                            </div>
                         </article>
                      },

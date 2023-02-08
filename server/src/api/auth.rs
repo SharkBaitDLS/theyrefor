@@ -1,5 +1,6 @@
 // Can be removed when: https://github.com/SergioBenitez/Rocket/issues/2350 is closed
 #![allow(clippy::let_unit_value)]
+use base64::engine::{general_purpose::URL_SAFE, Engine};
 use futures::TryFutureExt;
 use rand::{distributions::Alphanumeric, Rng};
 use rocket::{
@@ -69,7 +70,7 @@ fn build_auth_url(env: &State<Env>, cookies: &CookieJar<'_>) -> ApiError {
          "https://discord.com/api/oauth2/authorize",
          env.client_id,
          urlencoding::encode(&format!("{}/api/auth", env.base_uri)),
-         base64::encode(bincode::serialize(&state).unwrap())
+         URL_SAFE.encode(bincode::serialize(&state).unwrap())
       ),
    )
 }
@@ -160,7 +161,8 @@ pub fn logout(cookies: &CookieJar<'_>) {
 pub async fn authorize(
    code: &str, state: &str, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<DiscordClient>,
 ) -> Result<Redirect, Status> {
-   let state: AuthState = match base64::decode(state)
+   let state: AuthState = match URL_SAFE
+      .decode(state)
       .ok()
       .as_ref()
       .and_then(|bytes| bincode::deserialize(bytes).ok())

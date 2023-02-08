@@ -44,7 +44,7 @@ impl DiscordClient {
 
       self
          .http
-         .post(format!("https://discord.com/api/v{}/oauth2/token", DISCORD_API_VER))
+         .post(format!("https://discord.com/api/v{DISCORD_API_VER}/oauth2/token"))
          .header(
             header::CONTENT_TYPE,
             mime::APPLICATION_WWW_FORM_URLENCODED.essence_str(),
@@ -85,7 +85,7 @@ impl DiscordClient {
          .limit(1_000)
          .unwrap()
          .into_future()
-         .then(twilight_util::marshal_members)
+         .then(twilight_util::marshal_list)
          .await
    }
 
@@ -95,8 +95,8 @@ impl DiscordClient {
          .await
          .guild_member(Id::from_str(guild_id).unwrap(), Id::from_str(user_id).unwrap())
          .into_future()
-         .then(twilight_util::marshal_member::<DiscordGuildMember>)
-         .map_ok(|member| member.roles)
+         .then(twilight_util::marshal)
+         .map_ok(|member: DiscordGuildMember| member.roles)
          .await
    }
 
@@ -113,7 +113,7 @@ impl DiscordClient {
    pub async fn play_clip(&self, bot_uri: &str, guild_id: String, user_id: String, name: String) -> ApiResponse<()> {
       self
          .http
-         .post(format!("{}/play/{}/{}/{}", bot_uri, guild_id, user_id, name))
+         .post(format!("{bot_uri}/play/{guild_id}/{user_id}/{name}"))
          .send()
          .then(http_util::check_ok)
          .await
@@ -139,9 +139,9 @@ impl DiscordClient {
                   .default_headers(headers)
                   .remember_invalid_token(false)
                   .token(if is_bot {
-                     format!("Bot {}", token)
+                     format!("Bot {token}")
                   } else {
-                     format!("Bearer {}", token)
+                     format!("Bearer {token}")
                   })
                   .build(),
             )

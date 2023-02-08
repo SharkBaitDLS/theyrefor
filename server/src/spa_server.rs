@@ -27,7 +27,7 @@ impl From<SPAServer> for Vec<Route> {
    fn from(server: SPAServer) -> Self {
       let source = Source::File(server.root.clone());
       let mut route = Route::new(Method::Get, "/<_..>", server);
-      route.name = Some(format!("FileServer: {}", source).into());
+      route.name = Some(format!("FileServer: {source}").into());
       vec![route]
    }
 }

@@ -1,3 +1,4 @@
+use base64::engine::{general_purpose::URL_SAFE, Engine};
 use http::StatusCode;
 use log::error;
 use reqwasm::{
@@ -102,7 +103,7 @@ async fn update_redirect<T>(response: Response) -> Result<Option<T>, ClientError
    let url = maybe_url.unwrap();
 
    let state_param = url.query_pairs().find(|pair| pair.0 == STATE_PARAM).unwrap().1;
-   let mut auth_state: AuthState = bincode::deserialize(&base64::decode(&*state_param).unwrap()).unwrap();
+   let mut auth_state: AuthState = bincode::deserialize(&URL_SAFE.decode(&*state_param).unwrap()).unwrap();
    auth_state.redirect_to = location.href().ok();
 
    let remainder = url.query_pairs().filter(|pair| pair.0 != STATE_PARAM);
@@ -110,7 +111,7 @@ async fn update_redirect<T>(response: Response) -> Result<Option<T>, ClientError
    url.set_query(None);
    url.query_pairs_mut()
       .extend_pairs(remainder)
-      .append_pair(STATE_PARAM, &base64::encode(bincode::serialize(&auth_state).unwrap()));
+      .append_pair(STATE_PARAM, &URL_SAFE.encode(bincode::serialize(&auth_state).unwrap()));
 
    location
       .set_href(url.as_str())
