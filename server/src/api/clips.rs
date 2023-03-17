@@ -90,11 +90,7 @@ pub async fn delete_clip(
          path.push(format!("{}.mp3", name.to_lowercase()));
 
          // Security: don't allow directory traversal attacks
-         if path
-            .components()
-            .into_iter()
-            .any(|component| component == Component::ParentDir)
-         {
+         if path.components().any(|component| component == Component::ParentDir) {
             Err((Status::BadRequest, String::new()))
          } else {
             fs::remove_file(path).map_err(|_| (Status::InternalServerError, String::new()))
@@ -123,11 +119,7 @@ pub async fn upload_clip(
          path.push(format!("{}.mp3", name.to_lowercase()));
 
          // Security: don't allow directory traversal attacks
-         if path
-            .components()
-            .into_iter()
-            .any(|component| component == Component::ParentDir)
-         {
+         if path.components().any(|component| component == Component::ParentDir) {
             Err((Status::BadRequest, String::new()))
          } else {
             clip

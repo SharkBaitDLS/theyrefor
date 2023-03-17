@@ -31,11 +31,7 @@ pub async fn get_clip(
          path.push(&name.to_lowercase());
 
          // Security: don't allow directory traversal attacks
-         if path
-            .components()
-            .into_iter()
-            .any(|component| component == Component::ParentDir)
-         {
+         if path.components().any(|component| component == Component::ParentDir) {
             Err((Status::BadRequest, String::new()))
          } else {
             NamedFile::open(path).await.map_err(|err| match err.kind() {
