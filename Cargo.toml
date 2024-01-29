@@ -1,5 +1,6 @@
 [workspace]
 members = ["models", "server", "ui"]
+resolver = "2"
 
 [profile.release]
 lto = true

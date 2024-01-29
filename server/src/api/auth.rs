@@ -152,8 +152,7 @@ pub async fn login(env: &State<Env>, cookies: &CookieJar<'_>, client: &State<Dis
 
 #[post("/logout")]
 pub fn logout(cookies: &CookieJar<'_>) {
-   let mut token_cookie = Cookie::named(TOKEN_COOKIE_NAME);
-   token_cookie.set_path("/api");
+   let token_cookie = Cookie::build(TOKEN_COOKIE_NAME).path("/api");
    cookies.remove_private(token_cookie);
 }
 

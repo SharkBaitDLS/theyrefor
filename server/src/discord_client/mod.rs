@@ -3,8 +3,8 @@ mod models;
 mod twilight_util;
 
 use futures::{FutureExt, TryFutureExt};
-use http::{header, HeaderMap, HeaderValue};
 use moka::future::Cache;
+use reqwest::header::{self, HeaderMap, HeaderValue};
 use rocket::http::Status;
 use serde::Serialize;
 use std::{fmt::Display, future::IntoFuture, str::FromStr, sync::Arc, time::Duration};

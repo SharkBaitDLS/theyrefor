@@ -34,7 +34,7 @@ impl From<SPAServer> for Vec<Route> {
 
 #[async_trait::async_trait]
 impl Handler for SPAServer {
-   async fn handle<'r>(&self, req: &'r Request<'_>, data: Data<'r>) -> Outcome<'r> {
+   async fn handle<'r>(&self, req: &'r Request<'_>, _: Data<'r>) -> Outcome<'r> {
       let path = req
          .segments::<Segments<'_, Path>>(0..)
          .ok()
@@ -42,8 +42,8 @@ impl Handler for SPAServer {
          .map(|path| self.root.join(path));
 
       match path {
-         Some(p) if p.exists() => Outcome::from_or_forward(req, data, NamedFile::open(p).await.ok()),
-         _ => Outcome::from_or_forward(req, data, NamedFile::open(self.root.join("index.html")).await.ok()),
+         Some(p) if p.exists() => Outcome::try_from(req, NamedFile::open(p).await),
+         _ => Outcome::try_from(req, NamedFile::open(self.root.join("index.html")).await),
       }
    }
 }
