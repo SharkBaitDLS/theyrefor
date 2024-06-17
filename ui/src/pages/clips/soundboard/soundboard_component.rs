@@ -65,7 +65,7 @@ impl Component for Soundboard {
 
    fn changed(&mut self, ctx: &Context<Self>, _old_props: &Self::Properties) -> bool {
       if ctx.props().guild_id != self.guild_id {
-         self.guild_id = ctx.props().guild_id.clone();
+         self.guild_id.clone_from(&ctx.props().guild_id);
          ctx.link().send_future(super::get_clips(ctx.props().guild_id.clone()));
          true
       } else {

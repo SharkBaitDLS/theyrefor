@@ -16,6 +16,7 @@ static STATE_PARAM: &str = "state";
 #[derive(Debug)]
 pub enum ClientError {
    Client,
+   #[allow(dead_code)] // used for display in Debug
    Status(u16),
 }
 impl From<Error> for ClientError {
