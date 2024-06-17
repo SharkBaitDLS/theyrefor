@@ -51,10 +51,9 @@ fn build_auth_url(env: &State<Env>, cookies: &CookieJar<'_>) -> ApiError {
       .collect();
 
    let mut session_cookie = Cookie::new(SESSION_COOKIE_NAME, token.clone());
-   session_cookie.set_path("/api/auth");
    // This has to be lax because we retrieve it when Discord redirects back to us for auth
    session_cookie.set_same_site(SameSite::Lax);
-   session_cookie.set_http_only(true);
+   session_cookie.set_path("/api/auth");
    if env.is_release {
       session_cookie.set_secure(true);
    }
@@ -95,8 +94,6 @@ fn set_auth_token(token: AuthToken, env: &State<Env>, cookies: &CookieJar<'_>) -
    serde_json::to_string(&token).map(|serialized| {
       let mut auth_cookie = Cookie::new(TOKEN_COOKIE_NAME, serialized);
       auth_cookie.set_path("/api");
-      auth_cookie.set_same_site(SameSite::Strict);
-      auth_cookie.set_http_only(true);
       if env.is_release {
          auth_cookie.set_secure(true);
       }
@@ -172,13 +169,12 @@ pub async fn authorize(
       Some(data) => data,
       None => return Err(Status::Forbidden),
    };
-
-   let mut session_matches = false;
-   if let Some(session_cookie) = cookies.get_private(SESSION_COOKIE_NAME) {
-      session_matches = session_cookie.value() == state.token;
-      cookies.remove_private(session_cookie)
-   }
-   if !session_matches {
+   if cookies
+      .get_private(SESSION_COOKIE_NAME)
+      .map(|cookie| cookie.value().to_owned())
+      .filter(|session| *session == state.token)
+      .is_none()
+   {
       return Err(Status::Forbidden);
    }
 
