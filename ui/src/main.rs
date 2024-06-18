@@ -101,7 +101,7 @@ impl Model {
       html! {
          <nav class="navbar is-primary" role="navigation" aria-label="main navigation">
             <div class="navbar-brand">
-               <Link<Route> classes="navbar-item is-size-3 my-0 py-0" to={Route::Home}>
+               <Link<Route> classes="navbar-item has-text-white is-size-3 my-0 py-0" to={Route::Home}>
                   { "My Man" }
                </Link<Route>>
                <a role="button" class={classes!("navbar-burger", "burger", active_class)} aria-label="menu"
@@ -116,10 +116,10 @@ impl Model {
                   if user.is_some() {
                      html! {
                         <div class="navbar-start">
-                           <Link<Route> classes="navbar-item" to={Route::Clips}>
+                           <Link<Route> classes="navbar-item has-text-white" to={Route::Clips}>
                               { "Clips" }
                            </Link<Route>>
-                           <Link<Route> classes="navbar-item" to={Route::Servers}>
+                           <Link<Route> classes="navbar-item has-text-white" to={Route::Servers}>
                               { "Manage Servers" }
                            </Link<Route>>
                         </div>
@@ -134,7 +134,7 @@ impl Model {
                      Some(user) => if navbar_active {
                         html! {
                            <div onclick={ctx.link().callback(|_| { Msg::Logout })}>
-                              <Link<Route> classes="navbar-item" to={Route::Home}>
+                              <Link<Route> classes="navbar-item has-text-white" to={Route::Home}>
                                  { "Log Out" }
                                  <p class="has-text-grey">{ format!("(signed in as {})", &user.username) }</p>
                               </Link<Route>>

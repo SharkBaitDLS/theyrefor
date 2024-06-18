@@ -14,19 +14,15 @@ impl super::Guilds {
          },
          // Failed to load
          Some(Err(_)) => html! {
-            <div class="tile is-ancestor columns is-centered mt-2 px-4">
-               <div class="tile is-4 is-parent">
-                  <div class="tile is-child">
-                     <article class="message is-danger">
-                        <div class="message-header">
-                           <p>{ "Error" }</p>
-                        </div>
-                        <div class="message-body">
-                           { "We were unable to load your Discord servers. Please try again." }
-                        </div>
-                     </article>
+            <div class="columns is-centered mt-2 px-4">
+               <article class="message is-danger">
+                  <div class="message-header">
+                     <p>{ "Error" }</p>
                   </div>
-               </div>
+                  <div class="message-body">
+                     { "We were unable to load your Discord servers. Please try again." }
+                  </div>
+               </article>
             </div>
          },
          // Success
@@ -35,57 +31,56 @@ impl super::Guilds {
                if response.is_empty() {
                   // No servers available
                   html! {
-                     <div class="tile is-ancestor columns is-centered mt-2 px-4">
-                        <div class="tile is-4 is-parent">
-                           <div class="tile is-child">
-                              <article class="message is-info">
-                                 <div class="message-header">
-                                    <p>{ "No Servers Available" }</p>
-                                 </div>
-                                 {
-                                    if self.is_admin {
-                                       html! {
-                                          <div class="message-body">
-                                             { "You do not have permissions to modify clips in any of your servers." }
-                                          </div>
-                                       }
-                                    } else {
-                                       html! {
-                                          <div class="message-body">
-                                             { "You do not have access to any servers with the bot enabled." }
-                                          </div>
-                                       }
-                                    }
-                                 }
-                              </article>
+                     <div class="columns is-centered mt-2 px-4">
+                        <article class="message is-info">
+                           <div class="message-header">
+                              <p>{ "No Servers Available" }</p>
                            </div>
-                        </div>
+                           {
+                              if self.is_admin {
+                                 html! {
+                                    <div class="message-body">
+                                       { "You do not have permissions to modify clips in any of your servers." }
+                                    </div>
+                                 }
+                              } else {
+                                 html! {
+                                    <div class="message-body">
+                                       { "You do not have access to any servers with the bot enabled." }
+                                    </div>
+                                 }
+                              }
+                           }
+                        </article>
                      </div>
                   }
                } else {
                   // Show server icons
                   html! {
-                     <div class="tile is-ancestor is-vertical">
-                        <div class="tile is-child hero">
-                        {
-                           if self.is_admin {
-                              html! {
-                                 <div class="hero-body container pb-0">
-                                    <h1 class="title is-1">{ "Servers You Manage" }</h1>
-                                    <h2 class="subtitle">{ "Select one to upload or modify clips" }</h2>
-                                 </div>
-                              }
-                           } else {
-                              html! {
-                                 <div class="hero-body container pb-0">
-                                    <h1 class="title is-1">{ "Your Servers" }</h1>
-                                    <h2 class="subtitle">{ "Select one to see the available clips" }</h2>
-                                 </div>
+                     <div class="container">
+                        <div class="columns is-centered">
+                           <div class="hero">
+                           {
+                              if self.is_admin {
+                                 html! {
+                                    <div class="hero-body container">
+                                       <h1 class="title is-1">{ "Servers You Manage" }</h1>
+                                       <h2 class="subtitle">{ "Select one to upload or modify clips" }</h2>
+                                    </div>
+                                 }
+                              } else {
+                                 html! {
+                                    <div class="hero-body container">
+                                       <h1 class="title is-1">{ "Your Servers" }</h1>
+                                       <h2 class="subtitle">{ "Select one to see the available clips" }</h2>
+                                    </div>
+                                 }
                               }
                            }
-                        }
+                           </div>
                         </div>
-                        <div class="tile is-mobile is-parent container is-flex is-flex-wrap-wrap">
+                        // TODO: fix/create different layout on mobile
+                        <div class="columns is-centered">
                         {
                            for response.iter().map(|guild| {
                               let route = if self.is_admin {
@@ -94,22 +89,20 @@ impl super::Guilds {
                                  Route::Soundboard { guild_id: guild.id.clone() }
                               };
                               html! {
-                                 <Link<Route> classes="tile is-parent mx-3 my-3" to={route} >
+                                 <Link<Route> classes="py-1 px-3" to={route} >
                                  {
                                     match guild.icon.clone() {
                                        Some(icon) => html! {
-                                          <div class="tile is-child">
-                                             <figure class="is-flex-mobile is-justify-content-center">
-                                                <p class="image is-128x128 has-tooltip-arrow has-tooltip-top"
-                                                   data-tooltip={guild.name.clone()}>
-                                                   <img class="is-rounded" src={icon} />
-                                                </p>
-                                             </figure>
-                                          </div>
+                                          <p class="column has-tooltip-arrow has-tooltip-top image"
+                                             data-tooltip={guild.name.clone()}>
+                                             <img class="is-128x128 is-rounded" src={icon} />
+                                          </p>
                                        },
                                        None => html! {
-                                          <div class="tile is-child is-flex is-align-items-center is-justify-content-center image is-128x128">
-                                             <div><b>{ guild.name.clone() }</b></div>
+                                          <div class="column">
+                                             <div class="is-flex is-align-items-center is-justify-content-center image is-128x128">
+                                                <b>{ guild.name.clone() }</b>
+                                             </div>
                                           </div>
                                        }
                                     }

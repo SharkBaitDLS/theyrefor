@@ -16,19 +16,15 @@ impl super::Soundboard {
          },
          // Error
          Some(Err(_)) => html! {
-            <div class="tile is-ancestor columns is-centered mt-2 px-4">
-               <div class="tile is-4 is-parent">
-                  <div class="tile is-child">
-                     <article class="message is-danger">
-                        <div class="message-header">
-                           <p>{ "Error" }</p>
-                        </div>
-                        <div class="message-body">
-                           { "We were unable retrieve to your server clips. Please try again." }
-                        </div>
-                     </article>
+            <div class="columns is-centered mt-2 px-4">
+               <article class="message is-danger">
+                  <div class="message-header">
+                     <p>{ "Error" }</p>
                   </div>
-               </div>
+                  <div class="message-body">
+                     { "We were unable retrieve to your server clips. Please try again." }
+                  </div>
+               </article>
             </div>
          },
          // Success
@@ -50,7 +46,7 @@ impl super::Soundboard {
                                     }>
                                        <audio controls=false preload="none"
                                           src={format!("/api/audio/{}/{}.mp3", ctx.props().guild_id, name)} />
-                                       <i class="fa-solid fa-headphones fa-fw"/>
+                                       <i class="fa-solid fa-headphones fa-fw has-text-white"/>
                                     </button>
                                     <button class="button is-small ml-1 is-link" onclick={
                                        playback_callback(ctx, name.to_string())
@@ -80,7 +76,7 @@ impl super::Soundboard {
                                     }>
                                        <audio controls=false preload="none"
                                           src={format!("/api/audio/{}/{}.mp3", ctx.props().guild_id, name)} />
-                                       <i class="fa-solid fa-headphones fa-fw"/>
+                                       <i class="fa-solid fa-headphones fa-fw has-text-white"/>
                                     </button>
                                     <button class="button is-small ml-1 is-link" onclick={
                                        playback_callback(ctx, name.to_string())

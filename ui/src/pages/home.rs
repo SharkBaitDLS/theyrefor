@@ -11,16 +11,18 @@ impl Component for Home {
 
    fn view(&self, _ctx: &Context<Self>) -> Html {
       html! {
-         <div class="tile is-ancestor is-vertical">
-            <div class="tile is-child hero">
-               <div class="hero-body container pb-0">
-                  <h1 class="title is-1">{ "My Man" }</h1>
-                  <h2 class="subtitle">{ "Discord entrance announcements and soundboard" }</h2>
+         <div class="container">
+            <div class="columns is-centered">
+               <div class="hero">
+                  <div class="hero-body is-centered">
+                     <h1 class="title is-1">{ "My Man" }</h1>
+                     <h2 class="subtitle">{ "Discord entrance announcements and soundboard" }</h2>
+                  </div>
                </div>
             </div>
-            <div class="tile is-parent container">
-               <div class="tile is-parent">
-                  <div class="tile is-child box">
+            <div class="grid">
+               <div class="cell">
+                  <div class="box">
                      <p class="title">{ "How does it Work?" }</p>
                      <div class="content">
                         {
@@ -32,8 +34,8 @@ impl Component for Home {
                      </div>
                   </div>
                </div>
-               <div class="tile is-parent">
-                  <div class="tile is-child box">
+               <div class="cell">
+                  <div class="box">
                      <p class="title">{ "Server Admins" }</p>
                      <div class="content">
                         { "If you are an admin of a server or have been given a role that grants access to
