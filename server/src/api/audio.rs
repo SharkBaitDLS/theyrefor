@@ -16,7 +16,7 @@ use super::auth;
 
 #[get("/audio/<guild_id>/<name>")]
 pub async fn get_clip(
-   guild_id: String, name: String, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<DiscordClient>,
+   guild_id: &str, name: &str, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<DiscordClient>,
 ) -> ApiResponse<NamedFile> {
    auth::get_auth_token(env, cookies, client)
       .and_then(|token| client.get_user_guilds(token))

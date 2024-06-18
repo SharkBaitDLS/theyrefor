@@ -16,7 +16,7 @@ use theyrefor_models::GuildClips;
 
 #[post("/clips/<guild_id>/<name>")]
 pub async fn play_clip(
-   guild_id: String, name: String, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<DiscordClient>,
+   guild_id: &str, name: &str, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<DiscordClient>,
 ) -> ApiResponse<()> {
    auth::get_auth_token(env, cookies, client)
       .and_then(|token| user::get_current_user_id(token, client))
@@ -26,7 +26,7 @@ pub async fn play_clip(
 
 #[get("/clips/<id>")]
 pub async fn get_clips(
-   id: String, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<DiscordClient>,
+   id: &str, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<DiscordClient>,
 ) -> ApiResponse<Json<GuildClips>> {
    auth::get_auth_token(env, cookies, client)
       .and_then(|token| client.get_user_guilds(token))
@@ -36,7 +36,7 @@ pub async fn get_clips(
             .find(|guild| guild.id == id)
             .ok_or((Status::Forbidden, String::new()))?;
 
-         let guild_dir = [&env.clip_directory, &id].into_iter().collect();
+         let guild_dir = [&env.clip_directory, id].into_iter().collect();
          let clip_names: Vec<String> = get_clip_names(guild_dir)
             .into_iter()
             .map(|name| name.to_lowercase())
@@ -72,7 +72,7 @@ pub async fn get_clips(
 
 #[delete("/clips/<id>/<name>")]
 pub async fn delete_clip(
-   id: String, name: String, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<DiscordClient>,
+   id: &str, name: &str, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<DiscordClient>,
 ) -> ApiResponse<()> {
    let token = auth::get_auth_token(env, cookies, client).await?;
    let guilds = guilds::get_mutual_guilds(&token, client).await?;
@@ -86,7 +86,7 @@ pub async fn delete_clip(
    match guilds::take_guild_if_admin(env, client, guild, &user_id).await {
       None => Err((Status::Forbidden, String::new())),
       Some(_) => {
-         let mut path: PathBuf = [&env.clip_directory, &id].into_iter().collect();
+         let mut path: PathBuf = [&env.clip_directory, id].into_iter().collect();
          path.push(format!("{}.mp3", name.to_lowercase()));
 
          // Security: don't allow directory traversal attacks
@@ -101,7 +101,7 @@ pub async fn delete_clip(
 
 #[put("/clips/<id>/<name>", data = "<clip>")]
 pub async fn upload_clip(
-   id: String, name: String, clip: Data<'_>, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<DiscordClient>,
+   id: &str, name: &str, clip: Data<'_>, env: &State<Env>, cookies: &CookieJar<'_>, client: &State<DiscordClient>,
 ) -> ApiResponse<()> {
    let token = auth::get_auth_token(env, cookies, client).await?;
    let guilds = guilds::get_mutual_guilds(&token, client).await?;
@@ -115,7 +115,7 @@ pub async fn upload_clip(
    match guilds::take_guild_if_admin(env, client, guild, &user_id).await {
       None => Err((Status::Forbidden, String::new())),
       Some(_) => {
-         let mut path: PathBuf = [&env.clip_directory, &id].into_iter().collect();
+         let mut path: PathBuf = [&env.clip_directory, id].into_iter().collect();
          path.push(format!("{}.mp3", name.to_lowercase()));
 
          // Security: don't allow directory traversal attacks

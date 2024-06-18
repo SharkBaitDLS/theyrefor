@@ -110,7 +110,7 @@ impl DiscordClient {
          .await
    }
 
-   pub async fn play_clip(&self, bot_uri: &str, guild_id: String, user_id: String, name: String) -> ApiResponse<()> {
+   pub async fn play_clip(&self, bot_uri: &str, guild_id: &str, user_id: String, name: &str) -> ApiResponse<()> {
       self
          .http
          .post(format!("{bot_uri}/play/{guild_id}/{user_id}/{name}"))
