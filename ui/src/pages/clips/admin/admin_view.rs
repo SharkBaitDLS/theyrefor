@@ -31,19 +31,13 @@ impl super::Admin {
          // Success
          Some(Ok(response)) => html! {
             <div>
-               <div class="tile is-ancestor columns is-centered mt-2 px-4">
-                  <div class="tile is-4 is-parent">
-                     <div class="tile is-child">
-                        <div class="message is-info">
-                           <div class="message-header">
-                              <p>{"How it Works"}</p>
-                           </div>
-                           <div class="message-body">
-                              {"Here, you can preview, delete, or upload clips for your server. New clips must be"}
-                              {" in the MP3 format and no more than 50Mb."}
-                           </div>
-                        </div>
-                     </div>
+               <div class="message is-info">
+                  <div class="message-header">
+                     <p>{"How it Works"}</p>
+                  </div>
+                  <div class="message-body">
+                     {"Here, you can preview, delete, or upload clips for your server. New clips must be"}
+                     {" in the MP3 format and no more than 50Mb."}
                   </div>
                </div>
                <div class="columns mb-3">
@@ -73,12 +67,12 @@ impl super::Admin {
                                                 }>
                                                    <audio controls=false preload="none"
                                                       src={format!("/api/audio/{}/{name}.mp3", ctx.props().guild_id)} />
-                                                   <i class="fa-solid fa-headphones fa-fw"/>
+                                                   <i class="fa-solid fa-headphones fa-fw has-text-white"/>
                                                 </button>
                                                 <button class="ml-1 button is-small is-danger" onclick={
                                                    delete_callback(ctx, name.to_owned())
                                                 }>
-                                                   <i class="fa-solid fa-trash-can fa-fw"/>
+                                                   <i class="fa-solid fa-trash-can fa-fw has-text-white"/>
                                                 </button>
                                              </td>
                                           }
@@ -94,7 +88,7 @@ impl super::Admin {
                                              _ => {
                                                 html! {
                                                    <td>
-                                                      <label class="button is-small is-fullwidth is-link is-light">
+                                                      <label class="button is-small is-fullwidth is-link">
                                                          <input type="file" accept=".mp3" multiple=false hidden=true
                                                             onchange={
                                                                upload_user_clip_callback(ctx, name.to_owned())
@@ -131,7 +125,7 @@ impl super::Admin {
                                     placeholder="Clip name"/>
                               </td>
                               <td>
-                                 <label class="button is-small is-link is-light is-fullwidth">
+                                 <label class="button is-small is-link is-fullwidth">
                                     <input type="file" accept=".mp3" multiple=false hidden=true
                                        onchange={upload_clip_form_callback(ctx)}/>
                                     <i class="fa-solid fa-plus fa-fw"></i>
@@ -161,12 +155,12 @@ impl super::Admin {
                                        }>
                                           <audio controls=false preload="none"
                                              src={format!("/api/audio/{}/{name}.mp3", ctx.props().guild_id)} />
-                                          <i class="fa-solid fa-headphones fa-fw"/>
+                                          <i class="fa-solid fa-headphones fa-fw has-text-white"/>
                                        </button>
                                        <button class="ml-1 button is-small is-danger" onclick={
                                           delete_callback(ctx, name.to_owned())
                                        }>
-                                          <i class="fa-solid fa-trash-can fa-fw"/>
+                                          <i class="fa-solid fa-trash-can fa-fw has-text-white"/>
                                        </button>
                                     </td>
                                  </tr>

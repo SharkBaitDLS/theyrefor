@@ -167,7 +167,7 @@ impl Model {
                         }
                      },
                      None => html! {
-                        <a class="navbar-item" onclick={ctx.link().callback(|_| Msg::Login)}>{ "Log In" }</a>
+                        <a class="navbar-item has-text-white" onclick={ctx.link().callback(|_| Msg::Login)}>{ "Log In" }</a>
                      }
                   }
                }
