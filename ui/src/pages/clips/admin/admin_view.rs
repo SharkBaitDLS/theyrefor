@@ -31,13 +31,15 @@ impl super::Admin {
          // Success
          Some(Ok(response)) => html! {
             <div>
-               <div class="message is-info">
-                  <div class="message-header">
-                     <p>{"How it Works"}</p>
-                  </div>
-                  <div class="message-body">
-                     {"Here, you can preview, delete, or upload clips for your server. New clips must be"}
-                     {" in the MP3 format and no more than 50Mb."}
+               <div class="columns is-centered mt-2 px-4">
+                  <div class="message is-info">
+                     <div class="message-header">
+                        <p>{"How it Works"}</p>
+                     </div>
+                     <div class="message-body">
+                        {"Here, you can preview, delete, or upload clips for your server. New clips must be"}
+                        {" in the MP3 format and no more than 50Mb."}
+                     </div>
                   </div>
                </div>
                <div class="columns mb-3">
