@@ -55,11 +55,11 @@ jobs:
     needs: build
     steps:
       - name: Download release binary
-        uses: actions/download-artifact@v1
+        uses: actions/download-artifact@v4.1.7
         with:
           name: release
       - name: Download WASM
-        uses: actions/download-artifact@v1
+        uses: actions/download-artifact@v4.1.7
         with:
           name: dist
       - name: Deploy
