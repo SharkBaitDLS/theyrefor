@@ -40,12 +40,12 @@ jobs:
       - name: Webpack
         run: trunk build --release ui/index.html
       - name: Upload server binary
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v4
         with:
           name: release
           path: target/release/theyrefor-server
       - name: Upload WASM
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v4
         with:
           name: dist
           path: ui/dist
@@ -55,13 +55,15 @@ jobs:
     needs: build
     steps:
       - name: Download release binary
-        uses: actions/download-artifact@v4.1.7
+        uses: actions/download-artifact@v4
         with:
           name: release
+          path: release
       - name: Download WASM
-        uses: actions/download-artifact@v4.1.7
+        uses: actions/download-artifact@v4
         with:
           name: dist
+          path: dist
       - name: Deploy
         run: cp -f release/theyrefor-server /home/soundboard/server/ && cp -r dist /home/soundboard/server && chmod +x /home/soundboard/server/theyrefor-server
       - name: Activate
