@@ -38,7 +38,7 @@ jobs:
       - name: Build
         run: cargo build --release
       - name: Webpack
-        run: trunk build --release ui/index.html
+        run: trunk build --minify=true --release=true --config=ui/Cargo.toml index.html
       - name: Upload server binary
         uses: actions/upload-artifact@v4
         with:
