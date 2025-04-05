@@ -1,8 +1,6 @@
-// Can be removed when: https://github.com/SergioBenitez/Rocket/issues/2350 is closed
-#![allow(clippy::let_unit_value)]
 use base64::engine::{general_purpose::URL_SAFE, Engine};
 use futures::TryFutureExt;
-use rand::{distributions::Alphanumeric, Rng};
+use rand::{distr::Alphanumeric, Rng};
 use rocket::{
    http::{Cookie, CookieJar, SameSite, Status},
    response::Redirect,
@@ -44,11 +42,7 @@ struct DiscordRefreshRequest<'a> {
 }
 
 fn build_auth_url(env: &State<Env>, cookies: &CookieJar<'_>) -> ApiError {
-   let token: String = rand::thread_rng()
-      .sample_iter(&Alphanumeric)
-      .take(30)
-      .map(char::from)
-      .collect();
+   let token: String = rand::rng().sample_iter(Alphanumeric).take(30).map(char::from).collect();
 
    let mut session_cookie = Cookie::new(SESSION_COOKIE_NAME, token.clone());
    session_cookie.set_path("/api/auth");

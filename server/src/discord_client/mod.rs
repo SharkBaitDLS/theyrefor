@@ -83,7 +83,6 @@ impl DiscordClient {
          .await
          .guild_members(Id::from_str(guild_id).unwrap())
          .limit(1_000)
-         .unwrap()
          .into_future()
          .then(twilight_util::marshal_list)
          .await
