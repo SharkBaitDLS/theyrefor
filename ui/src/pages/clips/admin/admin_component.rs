@@ -80,16 +80,16 @@ impl Component for Admin {
             DeleteMsg::Fail(name) => self.to_delete = Some(Err(name)),
             DeleteMsg::Success => self.to_delete = None,
             DeleteMsg::Confirm => {
-               if let Some(Ok(name)) = self.to_delete.clone() {
-                  if let Some(Ok(data)) = &mut self.data {
-                     let clips = &mut data.clip_names;
-                     clips.retain(|clip| clip != &name);
+               if let Some(Ok(name)) = self.to_delete.clone()
+                  && let Some(Ok(data)) = &mut self.data
+               {
+                  let clips = &mut data.clip_names;
+                  clips.retain(|clip| clip != &name);
 
-                     let user_clips = &mut data.user_clip_names;
-                     user_clips.retain(|clip| clip != &name);
+                  let user_clips = &mut data.user_clip_names;
+                  user_clips.retain(|clip| clip != &name);
 
-                     ctx.link().send_future(delete_clip(self.guild_id.clone(), name));
-                  }
+                  ctx.link().send_future(delete_clip(self.guild_id.clone(), name));
                }
             }
          },
@@ -119,17 +119,15 @@ impl Component for Admin {
             }
             UploadMsg::Fail(name) => self.upload = Some(Err(name)),
          },
-      };
+      }
       true
    }
 
    fn changed(&mut self, ctx: &Context<Self>, _old_props: &Self::Properties) -> bool {
-      if ctx.props().guild_id != self.guild_id {
+      ctx.props().guild_id != self.guild_id && {
          self.guild_id.clone_from(&ctx.props().guild_id);
          ctx.link().send_future(super::get_clips(ctx.props().guild_id.clone()));
          true
-      } else {
-         false
       }
    }
 

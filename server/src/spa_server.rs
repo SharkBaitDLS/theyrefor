@@ -1,12 +1,12 @@
 use rocket::{
+   Data, Request, Route,
    figment::Source,
    fs::NamedFile,
    http::{
-      uri::{fmt::Path, Segments},
       Method,
+      uri::{Segments, fmt::Path},
    },
    route::{Handler, Outcome},
-   Data, Request, Route,
 };
 use std::path::PathBuf;
 
@@ -38,7 +38,7 @@ impl Handler for SPAServer {
       let path = req
          .segments::<Segments<'_, Path>>(0..)
          .ok()
-         .and_then(|segments| segments.last())
+         .and_then(Iterator::last)
          .map(|path| self.root.join(path));
 
       match path {

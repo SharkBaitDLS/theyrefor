@@ -4,8 +4,8 @@ mod route;
 
 use log::debug;
 use reqwasm::http::Request;
-use yew::{classes, html, Component, Context, Html};
-use yew_router::{components::Link, router::BrowserRouter, Switch};
+use yew::{Component, Context, Html, classes, html};
+use yew_router::{Switch, components::Link, router::BrowserRouter};
 
 use pages::{Admin, Guilds, Home, NotFound, Soundboard};
 use route::Route;
@@ -50,7 +50,7 @@ impl Component for Model {
          Msg::UserData(user) => self.user = user,
          Msg::Login => wasm_bindgen_futures::spawn_local(async {
             if let Err(err) = http_client::get_with_auth::<()>("/api/login").await {
-               debug!("Failed to log in: {:?}", err);
+               debug!("Failed to log in: {err:?}");
             }
          }),
          Msg::Logout => ctx.link().send_future(async {

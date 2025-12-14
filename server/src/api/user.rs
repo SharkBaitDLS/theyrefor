@@ -1,8 +1,8 @@
 use futures::TryFutureExt;
-use rocket::{http::CookieJar, serde::json::Json, State};
+use rocket::{State, http::CookieJar, serde::json::Json};
 use std::fmt::Display;
 
-use crate::{api::auth, api::ApiResponse, discord_client::DiscordClient, Env};
+use crate::{Env, api::ApiResponse, api::auth, discord_client::DiscordClient};
 use theyrefor_models::User;
 
 pub async fn get_current_user_id(token: impl Display, client: &State<DiscordClient>) -> ApiResponse<String> {

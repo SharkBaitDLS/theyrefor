@@ -8,7 +8,7 @@ use reqwest::header::{self, HeaderMap, HeaderValue};
 use rocket::http::Status;
 use serde::Serialize;
 use std::{fmt::Display, future::IntoFuture, str::FromStr, sync::Arc, time::Duration};
-use twilight_http::{client::ClientBuilder, Client};
+use twilight_http::{Client, client::ClientBuilder};
 use twilight_model::id::Id;
 
 use crate::api::ApiResponse;

@@ -28,15 +28,14 @@ async fn get_clips(guild_id: String) -> Msg {
 
 fn preview_callback() -> Callback<MouseEvent> {
    Callback::from(|event: MouseEvent| {
-      if let Some(element) = event.target_dyn_into::<HtmlElement>() {
-         if let Some(audio_element) = element.get_elements_by_tag_name("audio").get_with_index(0) {
-            if let Ok(audio) = audio_element.dyn_into::<HtmlMediaElement>() {
-               audio.set_volume(0.3);
-               if audio.play().is_err() {
-                  error!("Could not stream playback");
-               }
-            }
+      if let Some(element) = event.target_dyn_into::<HtmlElement>()
+         && let Some(audio_element) = element.get_elements_by_tag_name("audio").get_with_index(0)
+         && let Ok(audio) = audio_element.dyn_into::<HtmlMediaElement>()
+      {
+         audio.set_volume(0.3);
+         if audio.play().is_err() {
+            error!("Could not stream playback");
          }
-      };
+      }
    })
 }

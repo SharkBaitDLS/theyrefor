@@ -1,6 +1,7 @@
-use futures::{stream, StreamExt, TryFutureExt};
+use futures::{StreamExt, TryFutureExt, stream};
+use itertools::Itertools;
 use log::error;
-use rocket::{http::CookieJar, serde::json::Json, State};
+use rocket::{State, http::CookieJar, serde::json::Json};
 use std::{
    fmt::Display,
    fs::File,
@@ -8,10 +9,10 @@ use std::{
    path::PathBuf,
 };
 
-use super::{auth, user, ApiResponse};
+use super::{ApiResponse, auth, user};
 use crate::{
-   discord_client::{DiscordClient, DiscordGuild},
    Env,
+   discord_client::{DiscordClient, DiscordGuild},
 };
 use theyrefor_models::Guild;
 
@@ -22,7 +23,7 @@ pub async fn get_guilds(
    auth::get_auth_token(env, cookies, client)
       .and_then(|token| async move { get_mutual_guilds(token, client).await })
       .await
-      .map(|guilds| Json(guilds.into_iter().map(|guild| guild.into()).collect()))
+      .map(|guilds| Json(guilds.into_iter().map_into().collect()))
 }
 
 #[get("/guilds/admin")]
@@ -35,7 +36,6 @@ pub async fn get_admin_guilds(
 
    let admin_guilds = stream::iter(guilds)
       .filter_map(|guild| take_guild_if_admin(env, client, guild, &user_id))
-      .map(|guild| guild.into())
       .collect::<Vec<_>>()
       .await;
 
@@ -54,29 +54,29 @@ pub async fn get_mutual_guilds(token: impl Display, client: &State<DiscordClient
 
 pub async fn take_guild_if_admin(
    env: &State<Env>, client: &State<DiscordClient>, guild: DiscordGuild, user_id: &str,
-) -> Option<DiscordGuild> {
+) -> Option<Guild> {
    if guild.owner {
-      Some(guild)
+      Some(guild.into())
    } else {
       match client.get_guild_user_roles(&guild.id, user_id).await {
          Ok(roles) => {
             let path: PathBuf = [&env.clip_directory, &guild.id, ".role_id"].iter().collect();
 
             let mut admin_role_data = String::new();
-            if let Err(err) = File::open(path).map(|mut file| file.read_to_string(&mut admin_role_data)) {
-               if err.kind() != ErrorKind::NotFound {
-                  error!("Could not retrieve role ID for guild {:?}: {:?}", guild.id, err);
-               }
+            if let Err(err) = File::open(path).map(|mut file| file.read_to_string(&mut admin_role_data))
+               && err.kind() != ErrorKind::NotFound
+            {
+               error!("Could not retrieve role ID for guild {:?}: {:?}", guild.id, err);
             }
 
             if roles.contains(&admin_role_data) {
-               Some(guild)
+               Some(guild.into())
             } else {
                None
             }
          }
          Err(err) => {
-            error!("Could not retrieve guild roles for user: {:?}", err);
+            error!("Could not retrieve guild roles for user: {err:?}");
             None
          }
       }

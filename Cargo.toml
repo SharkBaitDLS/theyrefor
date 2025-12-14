@@ -7,3 +7,11 @@ lto = true
 
 [profile.release.package.theyrefor-ui]
 opt-level = 's'
+
+[workspace.dependencies]
+base64 = "0.22"
+bincode = { version = "2.0", default-features = false, features = ["alloc", "serde"] }
+err-into = "1.0"
+http = "1.4"
+log = "0.4"
+serde = "1.0"

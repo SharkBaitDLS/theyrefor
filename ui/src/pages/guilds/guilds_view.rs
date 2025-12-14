@@ -1,9 +1,10 @@
-use yew::{html, Context, Html};
+use yew::{Context, Html, html};
 use yew_router::components::Link;
 
 use crate::route::Route;
 
 impl super::Guilds {
+   #[allow(clippy::too_many_lines)]
    pub(super) fn render(&self, _ctx: &Context<Self>) -> Html {
       match &self.guilds {
          // Loading
@@ -13,7 +14,7 @@ impl super::Guilds {
             </div>
          },
          // Failed to load
-         Some(Err(_)) => html! {
+         Some(Err(())) => html! {
             <div class="columns is-centered mt-2 px-4">
                <article class="message is-danger">
                   <div class="message-header">

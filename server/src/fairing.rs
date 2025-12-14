@@ -1,7 +1,7 @@
 use rocket::{
+   Request, Response,
    fairing::{Fairing, Info, Kind},
    http::Header,
-   Request, Response,
 };
 
 use crate::Env;

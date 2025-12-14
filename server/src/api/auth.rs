@@ -1,20 +1,22 @@
-use base64::engine::{general_purpose::URL_SAFE, Engine};
+use base64::engine::{Engine, general_purpose::URL_SAFE};
+use bincode::config::{Configuration, Fixint, LittleEndian, NoLimit};
 use futures::TryFutureExt;
-use rand::{distr::Alphanumeric, Rng};
+use rand::{Rng, distr::Alphanumeric};
 use rocket::{
+   State,
    http::{Cookie, CookieJar, SameSite, Status},
    response::Redirect,
-   State,
 };
 use serde::{Deserialize, Serialize};
 use std::time::{Duration, Instant};
 
-use super::{user, ApiError, ApiResponse};
-use crate::{discord_client::DiscordClient, Env};
+use super::{ApiError, ApiResponse, user};
+use crate::{Env, discord_client::DiscordClient};
 use theyrefor_models::AuthState;
 
 const TOKEN_COOKIE_NAME: &str = "token";
 const SESSION_COOKIE_NAME: &str = "session";
+const BINCODE_CONFIG: Configuration<LittleEndian, Fixint, NoLimit> = bincode::config::legacy();
 
 #[derive(Serialize, Deserialize)]
 struct AuthToken {
@@ -65,7 +67,7 @@ fn build_auth_url(env: &State<Env>, cookies: &CookieJar<'_>) -> ApiError {
          "https://discord.com/api/oauth2/authorize",
          env.client_id,
          urlencoding::encode(&format!("{}/api/auth", env.base_uri)),
-         URL_SAFE.encode(bincode::serialize(&state).unwrap())
+         URL_SAFE.encode(bincode::serde::encode_to_vec(&state, BINCODE_CONFIG).unwrap())
       ),
    )
 }
@@ -161,16 +163,16 @@ pub async fn authorize(
       .decode(state)
       .ok()
       .as_ref()
-      .and_then(|bytes| bincode::deserialize(bytes).ok())
+      .and_then(|bytes| bincode::serde::decode_from_slice(bytes, BINCODE_CONFIG).ok())
    {
-      Some(data) => data,
+      Some((data, _)) => data,
       None => return Err(Status::Forbidden),
    };
 
    let mut session_matches = false;
    if let Some(session_cookie) = cookies.get_private(SESSION_COOKIE_NAME) {
       session_matches = session_cookie.value() == state.token;
-      cookies.remove_private(session_cookie)
+      cookies.remove_private(session_cookie);
    }
    if !session_matches {
       return Err(Status::Forbidden);

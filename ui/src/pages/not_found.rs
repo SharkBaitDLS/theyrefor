@@ -1,4 +1,4 @@
-use yew::{html, Component, Context, Html};
+use yew::{Component, Context, Html, html};
 
 pub struct NotFound {}
 impl Component for NotFound {

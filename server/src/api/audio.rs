@@ -5,12 +5,12 @@ use std::{
 
 use futures::TryFutureExt;
 use rocket::{
+   State,
    fs::NamedFile,
    http::{CookieJar, Status},
-   State,
 };
 
-use crate::{api::ApiResponse, discord_client::DiscordClient, Env};
+use crate::{Env, api::ApiResponse, discord_client::DiscordClient};
 
 use super::auth;
 

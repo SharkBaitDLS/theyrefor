@@ -1,11 +1,12 @@
 use web_sys::MouseEvent;
-use yew::{html, Callback, Context, Html};
+use yew::{Callback, Context, Html, html};
 
 use crate::pages::clips;
 
 use super::soundboard_component::PlaybackMsg;
 
 impl super::Soundboard {
+   #[allow(clippy::too_many_lines)]
    pub(super) fn render(&self, ctx: &Context<Self>) -> Html {
       match &self.data {
          // Loading
@@ -15,7 +16,7 @@ impl super::Soundboard {
             </div>
          },
          // Error
-         Some(Err(_)) => html! {
+         Some(Err(())) => html! {
             <div class="columns is-centered mt-2 px-4">
                <article class="message is-danger">
                   <div class="message-header">
@@ -49,7 +50,7 @@ impl super::Soundboard {
                                        <i class="fa-solid fa-headphones fa-fw has-text-white"/>
                                     </button>
                                     <button class="button is-small ml-1 is-link" onclick={
-                                       playback_callback(ctx, name.to_string())
+                                       playback_callback(ctx, name.clone())
                                     }>
                                        <i class="fa-solid fa-play fa-fw"/>
                                     </button>
@@ -79,7 +80,7 @@ impl super::Soundboard {
                                        <i class="fa-solid fa-headphones fa-fw has-text-white"/>
                                     </button>
                                     <button class="button is-small ml-1 is-link" onclick={
-                                       playback_callback(ctx, name.to_string())
+                                       playback_callback(ctx, name.clone())
                                     }>
                                        <i class="fa-solid fa-play fa-fw"/>
                                     </button>

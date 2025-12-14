@@ -35,7 +35,7 @@ impl Component for Guilds {
          Msg::Done(guilds) => self.guilds = Some(Ok(guilds)),
          Msg::Unauthorized => {}
          Msg::Fail => self.guilds = Some(Err(())),
-      };
+      }
       true
    }
 

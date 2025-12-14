@@ -1,12 +1,13 @@
 use wasm_bindgen::JsCast;
 use web_sys::{Event, HtmlInputElement, MouseEvent};
-use yew::{html, html::TargetCast, Callback, Context, Html};
+use yew::{Callback, Context, Html, html, html::TargetCast};
 
 use crate::pages::clips;
 
 use super::admin_component::{DeleteMsg, UploadMsg};
 
 impl super::Admin {
+   #[allow(clippy::too_many_lines)]
    pub(super) fn render(&self, ctx: &Context<Self>) -> Html {
       match &self.data {
          // Loading
@@ -16,7 +17,7 @@ impl super::Admin {
             </div>
          },
          // Error
-         Some(Err(_)) => html! {
+         Some(Err(())) => html! {
             <div class="columns is-centered mt-2 px-4">
                <article class="message is-danger">
                   <div class="message-header">
@@ -239,8 +240,9 @@ fn upload_user_clip_callback(ctx: &Context<super::Admin>, name: String) -> Callb
       input
          .files()
          .and_then(|files| files.item(0))
-         .map(|file| UploadMsg::File(file, name.to_owned(), Box::new(UploadMsg::UserSuccess(name.to_owned()))))
-         .unwrap_or(UploadMsg::Cancel)
+         .map_or(UploadMsg::Cancel, |file| {
+            UploadMsg::File(file, name.clone(), Box::new(UploadMsg::UserSuccess(name.clone())))
+         })
    })
 }
 
@@ -266,7 +268,7 @@ fn upload_clip_form_callback(ctx: &Context<super::Admin>) -> Callback<Event> {
                      .files()
                      .and_then(|files| files.item(0))
                      .filter(|_| !name.trim().is_empty())
-                     .map(|file| UploadMsg::File(file, name.to_owned(), Box::new(UploadMsg::ClipSuccess(name))))
+                     .map(|file| UploadMsg::File(file, name.clone(), Box::new(UploadMsg::ClipSuccess(name))))
                })
          })
          .unwrap_or(UploadMsg::Cancel);
@@ -277,5 +279,5 @@ fn upload_clip_form_callback(ctx: &Context<super::Admin>) -> Callback<Event> {
 }
 
 fn delete_callback(ctx: &Context<super::Admin>, name: String) -> Callback<MouseEvent> {
-   ctx.link().callback(move |_| DeleteMsg::Prompt(name.to_owned()))
+   ctx.link().callback(move |_| DeleteMsg::Prompt(name.clone()))
 }

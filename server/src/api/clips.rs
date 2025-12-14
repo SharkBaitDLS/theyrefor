@@ -1,17 +1,17 @@
 use futures::TryFutureExt;
 use rocket::{
+   State,
    data::{ByteUnit, Data},
    http::{CookieJar, Status},
    serde::json::Json,
-   State,
 };
 use std::{
    fs,
    path::{Component, PathBuf},
 };
 
-use super::{auth, guilds, user, ApiResponse};
-use crate::{discord_client::DiscordClient, Env};
+use super::{ApiResponse, auth, guilds, user};
+use crate::{Env, discord_client::DiscordClient};
 use theyrefor_models::GuildClips;
 
 #[post("/clips/<guild_id>/<name>")]
@@ -53,7 +53,7 @@ pub async fn get_clips(
          let user_clip_names: Vec<String> = user_names
             .iter()
             .filter(|name| clip_names.contains(&name.to_lowercase()))
-            .map(|name| name.to_owned())
+            .map(ToOwned::to_owned)
             .collect();
          let user_clip_names_lower: Vec<String> = user_clip_names.iter().map(|name| name.to_lowercase()).collect();
 
@@ -83,18 +83,20 @@ pub async fn delete_clip(
       .find(|guild| guild.id == id)
       .ok_or((Status::Forbidden, String::new()))?;
 
-   match guilds::take_guild_if_admin(env, client, guild, &user_id).await {
-      None => Err((Status::Forbidden, String::new())),
-      Some(_) => {
-         let mut path: PathBuf = [&env.clip_directory, id].into_iter().collect();
-         path.push(format!("{}.mp3", name.to_lowercase()));
+   if guilds::take_guild_if_admin(env, client, guild, &user_id)
+      .await
+      .is_none()
+   {
+      Err((Status::Forbidden, String::new()))
+   } else {
+      let mut path: PathBuf = [&env.clip_directory, id].into_iter().collect();
+      path.push(format!("{}.mp3", name.to_lowercase()));
 
-         // Security: don't allow directory traversal attacks
-         if path.components().any(|component| component == Component::ParentDir) {
-            Err((Status::BadRequest, String::new()))
-         } else {
-            fs::remove_file(path).map_err(|_| (Status::InternalServerError, String::new()))
-         }
+      // Security: don't allow directory traversal attacks
+      if path.components().any(|component| component == Component::ParentDir) {
+         Err((Status::BadRequest, String::new()))
+      } else {
+         fs::remove_file(path).map_err(|_| (Status::InternalServerError, String::new()))
       }
    }
 }
@@ -112,30 +114,36 @@ pub async fn upload_clip(
       .find(|guild| guild.id == id)
       .ok_or((Status::Forbidden, String::new()))?;
 
-   match guilds::take_guild_if_admin(env, client, guild, &user_id).await {
-      None => Err((Status::Forbidden, String::new())),
-      Some(_) => {
-         let mut path: PathBuf = [&env.clip_directory, id].into_iter().collect();
-         path.push(format!("{}.mp3", name.to_lowercase()));
+   if guilds::take_guild_if_admin(env, client, guild, &user_id)
+      .await
+      .is_none()
+   {
+      Err((Status::Forbidden, String::new()))
+   } else {
+      let mut path: PathBuf = [&env.clip_directory, id].into_iter().collect();
+      path.push(format!("{}.mp3", name.to_lowercase()));
 
-         // Security: don't allow directory traversal attacks
-         if path.components().any(|component| component == Component::ParentDir) {
-            Err((Status::BadRequest, String::new()))
-         } else {
-            clip
-               .open(ByteUnit::Megabyte(50))
-               .into_file(path)
-               .await
-               .map(|_| {})
-               .map_err(|_| (Status::InternalServerError, String::new()))
-         }
+      // Security: don't allow directory traversal attacks
+      if path.components().any(|component| component == Component::ParentDir) {
+         Err((Status::BadRequest, String::new()))
+      } else {
+         clip
+            .open(ByteUnit::Megabyte(50))
+            .into_file(path)
+            .await
+            .map(|_| {})
+            .map_err(|_| (Status::InternalServerError, String::new()))
       }
    }
 }
 
 fn get_clip_names(guild_dir: PathBuf) -> Vec<String> {
-   fs::read_dir(guild_dir)
-      .map(|entries| {
+   fs::read_dir(guild_dir).map_or_else(
+      |err| {
+         error!("Could not list audio file directory: {}", err);
+         Vec::new()
+      },
+      |entries| {
          let mut clips = entries
             .filter_map(|maybe_entry| {
                maybe_entry
@@ -153,9 +161,6 @@ fn get_clip_names(guild_dir: PathBuf) -> Vec<String> {
             .collect::<Vec<_>>();
          clips.sort_unstable_by_key(|clip| clip.to_lowercase());
          clips
-      })
-      .unwrap_or_else(|err| {
-         error!("Could not list audio file directory: {}", err);
-         Vec::new()
-      })
+      },
+   )
 }
