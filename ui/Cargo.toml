@@ -20,8 +20,8 @@ urlencoding = "2.1"
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
 wasm-logger = "0.2"
-yew = { version = "0.22", features = ["csr"] }
-yew-router = "0.19"
+yew = { version = "0.23", features = ["csr"] }
+yew-router = "0.20"
 
 [dependencies.web-sys]
 features = [
