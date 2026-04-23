@@ -1,7 +1,7 @@
 use base64::engine::{Engine, general_purpose::URL_SAFE};
 use bincode::config::{Configuration, Fixint, LittleEndian, NoLimit};
 use futures::TryFutureExt;
-use rand::{Rng, distr::Alphanumeric};
+use rand::{RngExt, distr::Alphanumeric};
 use rocket::{
    State,
    http::{Cookie, CookieJar, SameSite, Status},
